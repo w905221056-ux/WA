@@ -1,0 +1,3831 @@
+<!doctype html>
+<html lang="zh-CN">
+
+<head>
+
+<meta charset="utf-8">
+
+<meta name="viewport"
+      content="width=device-width,initial-scale=1">
+
+<title>A股实时选股平台 V2.0</title>
+
+<style>
+
+*{
+    box-sizing:border-box;
+}
+
+body{
+    margin:0;
+    background:#f4f6f8;
+    color:#202124;
+    font-family:
+        -apple-system,
+        BlinkMacSystemFont,
+        "Segoe UI",
+        "PingFang SC",
+        "Microsoft YaHei",
+        sans-serif;
+}
+
+header{
+    background:#111827;
+    color:#fff;
+    padding:20px;
+}
+
+header h1{
+    margin:0 0 6px;
+    font-size:23px;
+}
+
+header p{
+    margin:0;
+    color:#cbd5e1;
+    font-size:13px;
+}
+
+.container{
+    max-width:1450px;
+    margin:0 auto;
+    padding:18px;
+}
+
+.card{
+    background:#fff;
+    border-radius:14px;
+    padding:16px;
+    margin-bottom:16px;
+    box-shadow:
+        0 2px 10px rgba(0,0,0,.05);
+}
+
+.toolbar{
+    display:flex;
+    gap:10px;
+    flex-wrap:wrap;
+    align-items:center;
+}
+
+input,
+select,
+button{
+    height:40px;
+    border-radius:8px;
+    border:1px solid #d1d5db;
+    padding:0 12px;
+    font-size:14px;
+}
+
+input{
+    min-width:240px;
+    background:#fff;
+}
+
+button{
+    cursor:pointer;
+    background:#111827;
+    color:#fff;
+    border:0;
+}
+
+button.secondary{
+    background:#6b7280;
+}
+
+button.danger{
+    background:#b91c1c;
+}
+
+button.light{
+    background:#e5e7eb;
+    color:#111827;
+}
+
+.status{
+    display:inline-flex;
+    align-items:center;
+    gap:8px;
+    padding:8px 13px;
+    border-radius:20px;
+    background:#f3f4f6;
+    font-size:13px;
+}
+
+.dot{
+    width:9px;
+    height:9px;
+    border-radius:50%;
+    background:#9ca3af;
+}
+
+.dot.on{
+    background:#16a34a;
+}
+
+.dot.warn{
+    background:#f59e0b;
+}
+
+.dot.error{
+    background:#dc2626;
+}
+
+.kpis{
+    display:grid;
+    grid-template-columns:
+        repeat(5,minmax(0,1fr));
+    gap:12px;
+}
+
+.kpi{
+    background:#f9fafb;
+    border:1px solid #e5e7eb;
+    border-radius:11px;
+    padding:15px;
+}
+
+.kpi-title{
+    font-size:12px;
+    color:#6b7280;
+}
+
+.kpi-value{
+    margin-top:7px;
+    font-size:24px;
+    font-weight:700;
+}
+
+.tabs{
+    display:flex;
+    gap:8px;
+    flex-wrap:wrap;
+    margin-bottom:16px;
+}
+
+.tab{
+    background:#e5e7eb;
+    color:#111827;
+}
+
+.tab.active{
+    background:#111827;
+    color:#fff;
+}
+
+.panel{
+    display:none;
+}
+
+.panel.active{
+    display:block;
+}
+
+.table-wrap{
+    width:100%;
+    overflow-x:auto;
+}
+
+table{
+    width:100%;
+    min-width:1100px;
+    border-collapse:collapse;
+    margin-top:14px;
+}
+
+th,
+td{
+    padding:11px 8px;
+    border-bottom:1px solid #e5e7eb;
+    text-align:left;
+    font-size:13px;
+    white-space:nowrap;
+}
+
+th{
+    background:#f9fafb;
+    color:#4b5563;
+    position:sticky;
+    top:0;
+}
+
+.price-up{
+    color:#dc2626;
+    font-weight:700;
+}
+
+.price-down{
+    color:#16a34a;
+    font-weight:700;
+}
+
+.price-flat{
+    color:#6b7280;
+}
+
+.signal{
+    display:inline-block;
+    padding:4px 8px;
+    border-radius:6px;
+    background:#f3f4f6;
+    font-weight:600;
+}
+
+.signal.buy{
+    background:#fee2e2;
+    color:#b91c1c;
+}
+
+.signal.sell{
+    background:#dcfce7;
+    color:#166534;
+}
+
+.message{
+    padding:14px;
+    border-radius:9px;
+    background:#f9fafb;
+    color:#6b7280;
+    margin-top:12px;
+    line-height:1.6;
+}
+
+.message.success{
+    background:#f0fdf4;
+    color:#166534;
+}
+
+.message.error{
+    background:#fef2f2;
+    color:#991b1b;
+}
+
+.message.warn{
+    background:#fffbeb;
+    color:#92400e;
+}
+
+.small{
+    font-size:12px;
+    color:#6b7280;
+}
+
+.source-badge{
+    display:inline-block;
+    padding:4px 8px;
+    border-radius:6px;
+    background:#eef2ff;
+    color:#3730a3;
+    font-size:12px;
+}
+
+.pool-list{
+    display:grid;
+    grid-template-columns:
+        repeat(auto-fill,minmax(260px,1fr));
+    gap:10px;
+    margin-top:14px;
+}
+
+.stock-card{
+    border:1px solid #e5e7eb;
+    border-radius:11px;
+    padding:13px;
+    background:#fff;
+}
+
+.stock-card strong{
+    font-size:16px;
+}
+
+.code{
+    color:#6b7280;
+    font-size:12px;
+    margin-top:3px;
+}
+
+.stock-actions{
+    display:flex;
+    gap:7px;
+    margin-top:11px;
+    flex-wrap:wrap;
+}
+
+.stock-actions button{
+    height:34px;
+    font-size:12px;
+}
+
+.tag{
+    display:inline-block;
+    padding:3px 8px;
+    border-radius:5px;
+    background:#e0e7ff;
+    color:#3730a3;
+    margin:2px;
+    font-size:11px;
+}
+
+.modal{
+    position:fixed;
+    inset:0;
+    background:rgba(0,0,0,.45);
+    display:none;
+    align-items:center;
+    justify-content:center;
+    z-index:1000;
+}
+
+.modal.show{
+    display:flex;
+}
+
+.modal-box{
+    width:min(520px,92vw);
+    background:#fff;
+    border-radius:13px;
+    padding:20px;
+}
+
+.modal-box h3{
+    margin-top:0;
+}
+
+.checkbox-list{
+    display:flex;
+    flex-wrap:wrap;
+    gap:8px;
+    margin:15px 0;
+}
+
+.checkbox-list label{
+    border:1px solid #d1d5db;
+    border-radius:7px;
+    padding:7px 10px;
+    font-size:13px;
+}
+
+.info-grid{
+    display:grid;
+    grid-template-columns:
+        repeat(3,minmax(0,1fr));
+    gap:10px;
+    margin-top:14px;
+}
+
+.info-box{
+    background:#f9fafb;
+    border:1px solid #e5e7eb;
+    border-radius:9px;
+    padding:12px;
+}
+
+.info-title{
+    font-size:11px;
+    color:#6b7280;
+}
+
+.info-value{
+    font-weight:700;
+    margin-top:5px;
+}
+
+@media(max-width:800px){
+
+    .kpis{
+        grid-template-columns:
+            repeat(2,minmax(0,1fr));
+    }
+
+    .info-grid{
+        grid-template-columns:
+            repeat(2,minmax(0,1fr));
+    }
+
+    input{
+        width:100%;
+        min-width:0;
+    }
+
+}
+
+</style>
+
+</head>
+
+<body>
+
+<header>
+
+<h1>A股实时选股平台 V2.0</h1>
+
+<p>
+真实行情直连版 · 腾讯主行情 · 新浪备用
+</p>
+
+</header>
+
+
+<div class="container">
+
+
+<!-- =================================================
+     行情状态
+================================================== -->
+
+<div class="card">
+
+<div class="toolbar">
+
+<div class="status">
+
+<span
+    id="marketDot"
+    class="dot"
+></span>
+
+<span id="marketStatus">
+正在检查行情状态
+</span>
+
+</div>
+
+
+<div class="status">
+
+数据源：
+
+<strong id="dataSource">
+等待
+</strong>
+
+</div>
+
+
+<div class="status">
+
+最后更新：
+
+<strong id="lastUpdate">
+--
+</strong>
+
+</div>
+
+
+<button
+    onclick="refreshQuotes()"
+>
+立即刷新
+</button>
+
+</div>
+
+
+<div
+    id="quoteMessage"
+    class="message"
+>
+正在连接腾讯真实行情……
+</div>
+
+</div>
+
+
+<!-- =================================================
+     KPI
+================================================== -->
+
+<div class="card">
+
+<div class="kpis">
+
+<div class="kpi">
+
+<div class="kpi-title">
+股票数量
+</div>
+
+<div
+    id="kpiCount"
+    class="kpi-value"
+>
+0
+</div>
+
+</div>
+
+
+<div class="kpi">
+
+<div class="kpi-title">
+上涨
+</div>
+
+<div
+    id="kpiUp"
+    class="kpi-value"
+>
+0
+</div>
+
+</div>
+
+
+<div class="kpi">
+
+<div class="kpi-title">
+下跌
+</div>
+
+<div
+    id="kpiDown"
+    class="kpi-value"
+>
+0
+</div>
+
+</div>
+
+
+<div class="kpi">
+
+<div class="kpi-title">
+平盘
+</div>
+
+<div
+    id="kpiFlat"
+    class="kpi-value"
+>
+0
+</div>
+
+</div>
+
+
+<div class="kpi">
+
+<div class="kpi-title">
+真实行情
+</div>
+
+<div
+    id="kpiConnection"
+    class="kpi-value"
+>
+--
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+
+<!-- =================================================
+     TAB
+================================================== -->
+
+<div class="tabs">
+
+<button
+    class="tab active"
+    onclick="switchTab('quotes',this)"
+>
+实时行情
+</button>
+
+
+<button
+    class="tab"
+    onclick="switchTab('buy',this)"
+>
+买入筛选
+</button>
+
+
+<button
+    class="tab"
+    onclick="switchTab('sell',this)"
+>
+卖出筛选
+</button>
+
+
+<button
+    class="tab"
+    onclick="switchTab('pool',this)"
+>
+我的股票池
+</button>
+
+
+<button
+    class="tab"
+    onclick="switchTab('holding',this)"
+>
+我的持仓
+</button>
+
+
+<button
+    class="tab"
+    onclick="switchTab('tags',this)"
+>
+标签管理
+</button>
+
+</div>
+
+
+<!-- =================================================
+     实时行情
+================================================== -->
+
+<div
+    id="panel-quotes"
+    class="panel active"
+>
+
+<div class="card">
+
+<div class="toolbar">
+
+<input
+    id="searchInput"
+    placeholder="输入股票代码或名称"
+    oninput="renderQuotes()"
+/>
+
+
+<button
+    onclick="addSearchStock()"
+>
+加入股票池
+</button>
+
+</div>
+
+
+<div class="info-grid">
+
+<div class="info-box">
+
+<div class="info-title">
+行情模式
+</div>
+
+<div class="info-value">
+腾讯主行情
+</div>
+
+</div>
+
+
+<div class="info-box">
+
+<div class="info-title">
+备用行情
+</div>
+
+<div class="info-value">
+新浪
+</div>
+
+</div>
+
+
+<div class="info-box">
+
+<div class="info-title">
+刷新周期
+</div>
+
+<div class="info-value">
+30秒
+</div>
+
+</div>
+
+</div>
+
+
+<div class="table-wrap">
+
+<table>
+
+<thead>
+
+<tr>
+
+<th>代码</th>
+
+<th>名称</th>
+
+<th>市场</th>
+
+<th>现价</th>
+
+<th>涨跌</th>
+
+<th>涨跌幅</th>
+
+<th>今开</th>
+
+<th>最高</th>
+
+<th>最低</th>
+
+<th>成交量</th>
+
+<th>成交额</th>
+
+<th>数据源</th>
+
+<th>时间</th>
+
+</tr>
+
+</thead>
+
+<tbody
+    id="quoteTable"
+>
+</tbody>
+
+</table>
+
+</div>
+
+</div>
+
+</div>
+
+
+<!-- =================================================
+     买入
+================================================== -->
+
+<div
+    id="panel-buy"
+    class="panel"
+>
+
+<div class="card">
+
+<h3>
+买入筛选
+</h3>
+
+<div class="message">
+
+<strong>
+真实行情底层已经接入。
+</strong>
+
+<br>
+
+本版本先完成实时行情直连。
+
+你已经确定的
+MA5 / MA8 / MA13 / MA21 / MA34 / MA55、
+5分钟确认、成交量基准、
+A/B/C严格分级等规则，
+下一阶段在真实历史数据接入后启用。
+
+<br><br>
+
+这里暂时不会使用模拟数据生成买入信号。
+
+</div>
+
+</div>
+
+</div>
+
+
+<!-- =================================================
+     卖出
+================================================== -->
+
+<div
+    id="panel-sell"
+    class="panel"
+>
+
+<div class="card">
+
+<h3>
+卖出筛选
+</h3>
+
+<div class="message">
+
+<strong>
+真实行情底层已经接入。
+</strong>
+
+<br>
+
+卖出筛选只针对“我的持仓”。
+
+放量滞涨、放量大跌、
+跌破MA5、长上影线等规则，
+需要真实5分钟数据和历史数据后再接入。
+
+<br><br>
+
+当前不会使用模拟数据生成卖出信号。
+
+</div>
+
+</div>
+
+</div>
+
+
+<!-- =================================================
+     股票池
+================================================== -->
+
+<div
+    id="panel-pool"
+    class="panel"
+>
+
+<div class="card">
+
+<h3>
+我的股票池
+</h3>
+
+<div class="toolbar">
+
+<input
+    id="poolCode"
+    placeholder="输入6位股票代码，例如600519"
+/>
+
+<button
+    onclick="addToPool()"
+>
+加入股票池
+</button>
+
+</div>
+
+
+<div
+    id="poolList"
+    class="pool-list"
+></div>
+
+</div>
+
+</div>
+
+
+<!-- =================================================
+     持仓
+================================================== -->
+
+<div
+    id="panel-holding"
+    class="panel"
+>
+
+<div class="card">
+
+<h3>
+我的持仓
+</h3>
+
+<div class="toolbar">
+
+<input
+    id="holdingCode"
+    placeholder="输入6位股票代码"
+/>
+
+<button
+    onclick="addHolding()"
+>
+加入持仓
+</button>
+
+</div>
+
+
+<div
+    id="holdingList"
+    class="pool-list"
+></div>
+
+</div>
+
+</div>
+
+
+<!-- =================================================
+     标签
+================================================== -->
+
+<div
+    id="panel-tags"
+    class="panel"
+>
+
+<div class="card">
+
+<h3>
+标签管理
+</h3>
+
+<div class="toolbar">
+
+<input
+    id="tagName"
+    placeholder="输入新标签"
+/>
+
+<button
+    onclick="createTag()"
+>
+创建标签
+</button>
+
+</div>
+
+
+<div
+    id="tagList"
+    class="pool-list"
+></div>
+
+</div>
+
+</div>
+
+
+</div>
+
+
+<!-- =================================================
+     标签弹窗
+================================================== -->
+
+<div
+    id="tagModal"
+    class="modal"
+>
+
+<div class="modal-box">
+
+<h3>
+添加 / 修改标签
+</h3>
+
+
+<div
+    id="tagCheckboxes"
+    class="checkbox-list"
+></div>
+
+
+<div class="stock-actions">
+
+<button
+    onclick="saveStockTags()"
+>
+保存
+</button>
+
+
+<button
+    class="secondary"
+    onclick="closeTagModal()"
+>
+取消
+</button>
+
+</div>
+
+</div>
+
+</div>
+
+
+<script>
+
+/* =====================================================
+   V2.0 真实行情核心
+
+   不再使用 server.js
+
+   直接通过 script 加载：
+   腾讯 qt.gtimg.cn
+   新浪 hq.sinajs.cn
+
+===================================================== */
+
+
+/* =====================================================
+   本地数据
+===================================================== */
+
+const STORAGE_KEY =
+    "A_SHARE_PLATFORM_V20";
+
+
+let appData =
+    loadData();
+
+
+let quotes = [];
+
+
+let currentTagStock =
+    null;
+
+
+/*
+  本次行情请求的临时变量
+*/
+
+let quoteRequestId = 0;
+
+
+/* =====================================================
+   默认数据
+===================================================== */
+
+function defaultData(){
+
+    return {
+
+        stockPool: [],
+
+        holdings: [],
+
+        tags: [],
+
+        stockTags: {}
+
+    };
+
+}
+
+
+function loadData(){
+
+    try{
+
+        const raw =
+            localStorage.getItem(
+                STORAGE_KEY
+            );
+
+
+        if(!raw){
+
+            return defaultData();
+
+        }
+
+
+        const data =
+            JSON.parse(raw);
+
+
+        return {
+
+            ...defaultData(),
+
+            ...data
+
+        };
+
+    }
+    catch(error){
+
+        console.error(
+            error
+        );
+
+        return defaultData();
+
+    }
+
+}
+
+
+function saveData(){
+
+    localStorage.setItem(
+        STORAGE_KEY,
+        JSON.stringify(appData)
+    );
+
+}
+
+
+/* =====================================================
+   Tab
+===================================================== */
+
+function switchTab(
+    name,
+    button
+){
+
+    document
+        .querySelectorAll(".panel")
+        .forEach(panel => {
+
+            panel.classList.remove(
+                "active"
+            );
+
+        });
+
+
+    const target =
+        document.getElementById(
+            "panel-" + name
+        );
+
+
+    if(target){
+
+        target.classList.add(
+            "active"
+        );
+
+    }
+
+
+    document
+        .querySelectorAll(".tab")
+        .forEach(tab => {
+
+            tab.classList.remove(
+                "active"
+            );
+
+        });
+
+
+    button.classList.add(
+        "active"
+    );
+
+
+    if(name === "pool"){
+
+        renderPool();
+
+    }
+
+
+    if(name === "holding"){
+
+        renderHoldings();
+
+    }
+
+
+    if(name === "tags"){
+
+        renderTags();
+
+    }
+
+}
+
+
+/* =====================================================
+   代码处理
+===================================================== */
+
+function normalizeCode(code){
+
+    return String(
+        code || ""
+    )
+    .replace(/\D/g,"")
+    .slice(-6);
+
+}
+
+
+function validStockCode(code){
+
+    code =
+        normalizeCode(code);
+
+
+    if(
+        code.length !== 6
+    ){
+
+        return false;
+
+    }
+
+
+    /*
+      北交所：
+      4xxxxx
+      8xxxxx
+    */
+
+    if(
+        code.startsWith("4") ||
+        code.startsWith("8")
+    ){
+
+        return false;
+
+    }
+
+
+    /*
+      沪深：
+      6xxxxx
+      0xxxxx
+      3xxxxx
+    */
+
+    if(
+        !(
+            code.startsWith("6") ||
+            code.startsWith("0") ||
+            code.startsWith("3")
+        )
+    ){
+
+        return false;
+
+    }
+
+
+    return true;
+
+}
+
+
+/* =====================================================
+   市场前缀
+===================================================== */
+
+function marketPrefix(
+    code
+){
+
+    code =
+        normalizeCode(code);
+
+
+    if(
+        code.startsWith("6")
+    ){
+
+        return "sh";
+
+    }
+
+
+    if(
+        code.startsWith("0") ||
+        code.startsWith("3")
+    ){
+
+        return "sz";
+
+    }
+
+
+    return null;
+
+}
+
+
+/* =====================================================
+   去除 ST / *ST
+===================================================== */
+
+function isExcludedName(
+    name
+){
+
+    const n =
+        String(
+            name || ""
+        )
+        .replace(/\s/g,"")
+        .toUpperCase();
+
+
+    return (
+        n.startsWith("ST") ||
+        n.startsWith("*ST")
+    );
+
+}
+
+
+/* =====================================================
+   生成请求代码
+===================================================== */
+
+function buildSymbols(
+    codes
+){
+
+    return codes
+        .map(code => {
+
+            const prefix =
+                marketPrefix(code);
+
+
+            if(!prefix){
+
+                return null;
+
+            }
+
+
+            return (
+                prefix +
+                normalizeCode(code)
+            );
+
+        })
+        .filter(Boolean);
+
+}
+
+
+/* =====================================================
+   动态加载 JS
+===================================================== */
+
+function loadExternalScript(
+    url,
+    charset = null
+){
+
+    return new Promise(
+        (resolve,reject) => {
+
+            const script =
+                document.createElement(
+                    "script"
+                );
+
+
+            script.src =
+                url;
+
+
+            script.async =
+                true;
+
+
+            if(charset){
+
+                script.charset =
+                    charset;
+
+            }
+
+
+            const timer =
+                setTimeout(
+                    () => {
+
+                        script.remove();
+
+                        reject(
+                            new Error(
+                                "请求超时"
+                            )
+                        );
+
+                    },
+                    10000
+                );
+
+
+            script.onload =
+                () => {
+
+                    clearTimeout(
+                        timer
+                    );
+
+                    script.remove();
+
+                    resolve();
+
+                };
+
+
+            script.onerror =
+                () => {
+
+                    clearTimeout(
+                        timer
+                    );
+
+                    script.remove();
+
+                    reject(
+                        new Error(
+                            "行情接口加载失败"
+                        )
+                    );
+
+                };
+
+
+            document
+                .head
+                .appendChild(
+                    script
+                );
+
+        }
+    );
+
+}
+
+
+/* =====================================================
+   腾讯行情
+===================================================== */
+
+async function fetchTencent(
+    codes
+){
+
+    const symbols =
+        buildSymbols(codes);
+
+
+    if(!symbols.length){
+
+        return [];
+
+    }
+
+
+    /*
+      腾讯支持批量股票查询。
+
+      增加随机参数避免浏览器缓存。
+    */
+
+    const url =
+        "https://qt.gtimg.cn/q=" +
+        symbols.join(",") +
+        "&_=" +
+        Date.now();
+
+
+    await loadExternalScript(
+        url,
+        "gbk"
+    );
+
+
+    const result = [];
+
+
+    for(
+        const symbol of symbols
+    ){
+
+        const variableName =
+            "v_" + symbol;
+
+
+        const raw =
+            window[
+                variableName
+            ];
+
+
+        if(
+            typeof raw !== "string"
+        ){
+
+            continue;
+
+        }
+
+
+        const fields =
+            raw.split("~");
+
+
+        if(
+            fields.length < 6
+        ){
+
+            continue;
+
+        }
+
+
+        const code =
+            fields[2] ||
+            symbol.slice(2);
+
+
+        const name =
+            fields[1] ||
+            "";
+
+
+        /*
+          ST / *ST 排除
+        */
+
+        if(
+            isExcludedName(
+                name
+            )
+        ){
+
+            continue;
+
+        }
+
+
+        const price =
+            Number(fields[3]) ||
+            0;
+
+
+        const prevClose =
+            Number(fields[4]) ||
+            0;
+
+
+        const open =
+            Number(fields[5]) ||
+            0;
+
+
+        const change =
+            Number(fields[31]) ||
+            (
+                price -
+                prevClose
+            );
+
+
+        const changePercent =
+            Number(fields[32]) ||
+            (
+                prevClose
+                    ? (
+                        change /
+                        prevClose *
+                        100
+                    )
+                    : 0
+            );
+
+
+        const high =
+            Number(fields[33]) ||
+            0;
+
+
+        const low =
+            Number(fields[34]) ||
+            0;
+
+
+        const volume =
+            Number(fields[36]) ||
+            0;
+
+
+        const amount =
+            Number(fields[37]) ||
+            0;
+
+
+        const turnover =
+            Number(fields[38]) ||
+            0;
+
+
+        const amplitude =
+            Number(fields[43]) ||
+            0;
+
+
+        const time =
+            fields[30] ||
+            "";
+
+
+        result.push({
+
+            code,
+
+            name,
+
+            market:
+                symbol.startsWith("sh")
+                    ? "沪市"
+                    : "深市",
+
+            source:
+                "tencent",
+
+            price,
+
+            prevClose,
+
+            open,
+
+            high,
+
+            low,
+
+            change,
+
+            changePercent,
+
+            volume,
+
+            amount,
+
+            turnover,
+
+            amplitude,
+
+            time
+
+        });
+
+    }
+
+
+    return result;
+
+}
+
+
+/* =====================================================
+   新浪行情
+===================================================== */
+
+async function fetchSina(
+    codes
+){
+
+    const symbols =
+        buildSymbols(codes);
+
+
+    if(!symbols.length){
+
+        return [];
+
+    }
+
+
+    const url =
+        "https://hq.sinajs.cn/list=" +
+        symbols.join(",") +
+        "&_=" +
+        Date.now();
+
+
+    /*
+      新浪返回 JS 变量。
+      使用 script 直接加载，
+      不通过 fetch。
+    */
+
+    await loadExternalScript(
+        url,
+        "gb2312"
+    );
+
+
+    const result = [];
+
+
+    for(
+        const symbol of symbols
+    ){
+
+        const variableName =
+            "hq_str_" +
+            symbol;
+
+
+        const raw =
+            window[
+                variableName
+            ];
+
+
+        if(
+            typeof raw !== "string"
+        ){
+
+            continue;
+
+        }
+
+
+        const fields =
+            raw.split(",");
+
+
+        if(
+            fields.length < 10
+        ){
+
+            continue;
+
+        }
+
+
+        const code =
+            symbol.slice(2);
+
+
+        const name =
+            fields[0] ||
+            "";
+
+
+        if(
+            isExcludedName(
+                name
+            )
+        ){
+
+            continue;
+
+        }
+
+
+        const open =
+            Number(fields[1]) ||
+            0;
+
+
+        const prevClose =
+            Number(fields[2]) ||
+            0;
+
+
+        const price =
+            Number(fields[3]) ||
+            0;
+
+
+        const high =
+            Number(fields[4]) ||
+            0;
+
+
+        const low =
+            Number(fields[5]) ||
+            0;
+
+
+        const volume =
+            Number(fields[8]) ||
+            0;
+
+
+        const amount =
+            Number(fields[9]) ||
+            0;
+
+
+        const change =
+            price -
+            prevClose;
+
+
+        const changePercent =
+            prevClose
+                ? (
+                    change /
+                    prevClose *
+                    100
+                )
+                : 0;
+
+
+        const date =
+            fields[30] ||
+            "";
+
+
+        const time =
+            fields[31] ||
+            "";
+
+
+        result.push({
+
+            code,
+
+            name,
+
+            market:
+                symbol.startsWith("sh")
+                    ? "沪市"
+                    : "深市",
+
+            source:
+                "sina",
+
+            price,
+
+            prevClose,
+
+            open,
+
+            high,
+
+            low,
+
+            change,
+
+            changePercent,
+
+            volume,
+
+            amount,
+
+            time:
+                date && time
+                    ? date +
+                      " " +
+                      time
+                    : time
+
+        });
+
+    }
+
+
+    return result;
+
+}
+
+
+/* =====================================================
+   合并行情
+===================================================== */
+
+function mergeQuotes(
+    tencent,
+    sina
+){
+
+    const map =
+        new Map();
+
+
+    /*
+      新浪先进入。
+    */
+
+    for(
+        const quote of sina
+    ){
+
+        map.set(
+            quote.code,
+            quote
+        );
+
+    }
+
+
+    /*
+      腾讯覆盖新浪。
+
+      所以：
+      腾讯有数据 → 腾讯
+      腾讯没有 → 新浪
+    */
+
+    for(
+        const quote of tencent
+    ){
+
+        map.set(
+            quote.code,
+            quote
+        );
+
+    }
+
+
+    return [
+        ...map.values()
+    ];
+
+}
+
+
+/* =====================================================
+   测试股票
+===================================================== */
+
+function getTestCodes(){
+
+    return [
+
+        "600519",
+
+        "000858",
+
+        "000001",
+
+        "601318",
+
+        "300750"
+
+    ];
+
+}
+
+
+/* =====================================================
+   获取本次需要的股票
+===================================================== */
+
+function getQuoteCodes(){
+
+    let codes = [
+
+        ...appData.stockPool,
+
+        ...appData.holdings
+
+    ];
+
+
+    codes =
+        codes
+            .map(normalizeCode)
+            .filter(validStockCode);
+
+
+    codes =
+        [
+            ...new Set(codes)
+        ];
+
+
+    /*
+      股票池和持仓都为空时，
+      用真实股票测试行情接口。
+
+      这不是模拟数据。
+    */
+
+    if(
+        codes.length === 0
+    ){
+
+        codes =
+            getTestCodes();
+
+    }
+
+
+    return codes;
+
+}
+
+
+/* =====================================================
+   核心：刷新真实行情
+===================================================== */
+
+async function refreshQuotes(){
+
+    const requestId =
+        ++quoteRequestId;
+
+
+    setConnection(
+        "正在连接腾讯真实行情……",
+        "loading"
+    );
+
+
+    const codes =
+        getQuoteCodes();
+
+
+    let tencent = [];
+
+    let sina = [];
+
+
+    let tencentError =
+        null;
+
+
+    let sinaError =
+        null;
+
+
+    /*
+      第一优先：腾讯
+    */
+
+    try{
+
+        tencent =
+            await fetchTencent(
+                codes
+            );
+
+    }
+    catch(error){
+
+        tencentError =
+            error.message;
+
+        console.warn(
+            "腾讯行情失败：",
+            error
+        );
+
+    }
+
+
+    /*
+      如果腾讯没有返回全部数据，
+      再请求新浪补缺。
+
+      新浪不是简单等待腾讯失败，
+      而是负责补缺。
+    */
+
+    const tencentCodes =
+        new Set(
+            tencent.map(
+                q => q.code
+            )
+        );
+
+
+    const missingCodes =
+        codes.filter(
+            code =>
+                !tencentCodes.has(
+                    code
+                )
+        );
+
+
+    if(
+        missingCodes.length
+    ){
+
+        try{
+
+            sina =
+                await fetchSina(
+                    missingCodes
+                );
+
+        }
+        catch(error){
+
+            sinaError =
+                error.message;
+
+            console.warn(
+                "新浪行情失败：",
+                error
+            );
+
+        }
+
+    }
+
+
+    /*
+      如果整个请求已经过时，
+      不再覆盖新的行情。
+    */
+
+    if(
+        requestId !== quoteRequestId
+    ){
+
+        return;
+
+    }
+
+
+    quotes =
+        mergeQuotes(
+            tencent,
+            sina
+        );
+
+
+    /*
+      数据源显示
+    */
+
+    let sourceText =
+        "无";
+
+
+    if(
+        tencent.length &&
+        sina.length
+    ){
+
+        sourceText =
+            "腾讯 + 新浪";
+
+    }
+    else if(
+        tencent.length
+    ){
+
+        sourceText =
+            "腾讯";
+
+    }
+    else if(
+        sina.length
+    ){
+
+        sourceText =
+            "新浪";
+
+    }
+
+
+    document
+        .getElementById(
+            "dataSource"
+        )
+        .textContent =
+            sourceText;
+
+
+    document
+        .getElementById(
+            "lastUpdate"
+        )
+        .textContent =
+            new Date()
+                .toLocaleTimeString();
+
+
+    document
+        .getElementById(
+            "kpiConnection"
+        )
+        .textContent =
+            quotes.length
+                ? "正常"
+                : "失败";
+
+
+    renderQuotes();
+
+    renderPool();
+
+    renderHoldings();
+
+
+    if(
+        quotes.length
+    ){
+
+        let text =
+            "真实行情已连接。";
+
+        if(
+            tencent.length &&
+            sina.length
+        ){
+
+            text +=
+                " 腾讯为主，新浪补缺。";
+
+        }
+        else if(
+            tencent.length
+        ){
+
+            text +=
+                " 当前使用腾讯行情。";
+
+        }
+        else{
+
+            text +=
+                " 当前使用新浪行情。";
+
+        }
+
+
+        text +=
+            " 本次取得 " +
+            quotes.length +
+            " 只股票。";
+
+
+        showQuoteMessage(
+            text,
+            "success"
+        );
+
+
+        setConnection(
+            "真实行情已连接",
+            "on"
+        );
+
+    }
+    else{
+
+        let text =
+            "真实行情暂时没有返回。";
+
+
+        if(
+            tencentError
+        ){
+
+            text +=
+                " 腾讯：" +
+                tencentError;
+
+        }
+
+
+        if(
+            sinaError
+        ){
+
+            text +=
+                " 新浪：" +
+                sinaError;
+
+        }
+
+
+        showQuoteMessage(
+            text,
+            "error"
+        );
+
+
+        setConnection(
+            "真实行情连接失败",
+            "error"
+        );
+
+    }
+
+}
+
+
+/* =====================================================
+   状态
+===================================================== */
+
+function setConnection(
+    text,
+    state
+){
+
+    const status =
+        document.getElementById(
+            "marketStatus"
+        );
+
+
+    const dot =
+        document.getElementById(
+            "marketDot"
+        );
+
+
+    status.textContent =
+        text;
+
+
+    dot.classList.remove(
+        "on",
+        "warn",
+        "error"
+    );
+
+
+    if(
+        state === "on"
+    ){
+
+        dot.classList.add(
+            "on"
+        );
+
+    }
+    else if(
+        state === "loading"
+    ){
+
+        dot.classList.add(
+            "warn"
+        );
+
+    }
+    else if(
+        state === "error"
+    ){
+
+        dot.classList.add(
+            "error"
+        );
+
+    }
+
+}
+
+
+function showQuoteMessage(
+    text,
+    type
+){
+
+    const box =
+        document.getElementById(
+            "quoteMessage"
+        );
+
+
+    box.textContent =
+        text;
+
+
+    box.className =
+        "message";
+
+
+    if(type){
+
+        box.classList.add(
+            type
+        );
+
+    }
+
+}
+
+
+/* =====================================================
+   行情显示
+===================================================== */
+
+function renderQuotes(){
+
+    const tbody =
+        document.getElementById(
+            "quoteTable"
+        );
+
+
+    const keyword =
+        document
+            .getElementById(
+                "searchInput"
+            )
+            .value
+            .trim()
+            .toLowerCase();
+
+
+    let list =
+        quotes.filter(
+            q => {
+
+                if(!keyword){
+
+                    return true;
+
+                }
+
+
+                return (
+
+                    String(q.code)
+                        .includes(
+                            keyword
+                        )
+
+                    ||
+
+                    String(q.name)
+                        .toLowerCase()
+                        .includes(
+                            keyword
+                        )
+
+                );
+
+            }
+        );
+
+
+    tbody.innerHTML = "";
+
+
+    if(
+        !list.length
+    ){
+
+        updateKPIs();
+
+        return;
+
+    }
+
+
+    for(
+        const q of list
+    ){
+
+        const tr =
+            document.createElement(
+                "tr"
+            );
+
+
+        const cls =
+            q.change > 0
+                ? "price-up"
+                : q.change < 0
+                    ? "price-down"
+                    : "price-flat";
+
+
+        tr.innerHTML = `
+
+<td>
+${escapeHTML(q.code)}
+</td>
+
+<td>
+<strong>
+${escapeHTML(q.name)}
+</strong>
+</td>
+
+<td>
+${escapeHTML(q.market || "--")}
+</td>
+
+<td class="${cls}">
+${formatNumber(q.price,2)}
+</td>
+
+<td class="${cls}">
+${formatSigned(q.change,2)}
+</td>
+
+<td class="${cls}">
+${formatSigned(q.changePercent,2)}%
+</td>
+
+<td>
+${formatNumber(q.open,2)}
+</td>
+
+<td>
+${formatNumber(q.high,2)}
+</td>
+
+<td>
+${formatNumber(q.low,2)}
+</td>
+
+<td>
+${formatNumber(q.volume,0)}
+</td>
+
+<td>
+${formatNumber(q.amount,0)}
+</td>
+
+<td>
+<span class="source-badge">
+${
+    q.source === "tencent"
+        ? "腾讯"
+        : "新浪"
+}
+</span>
+</td>
+
+<td>
+${escapeHTML(q.time || "--")}
+</td>
+
+`;
+
+
+        tbody.appendChild(
+            tr
+        );
+
+    }
+
+
+    updateKPIs();
+
+}
+
+
+/* =====================================================
+   KPI
+===================================================== */
+
+function updateKPIs(){
+
+    let up = 0;
+
+    let down = 0;
+
+    let flat = 0;
+
+
+    for(
+        const q of quotes
+    ){
+
+        if(
+            q.change > 0
+        ){
+
+            up++;
+
+        }
+        else if(
+            q.change < 0
+        ){
+
+            down++;
+
+        }
+        else{
+
+            flat++;
+
+        }
+
+    }
+
+
+    document
+        .getElementById(
+            "kpiCount"
+        )
+        .textContent =
+            quotes.length;
+
+
+    document
+        .getElementById(
+            "kpiUp"
+        )
+        .textContent =
+            up;
+
+
+    document
+        .getElementById(
+            "kpiDown"
+        )
+        .textContent =
+            down;
+
+
+    document
+        .getElementById(
+            "kpiFlat"
+        )
+        .textContent =
+            flat;
+
+}
+
+
+/* =====================================================
+   股票池
+===================================================== */
+
+function addToPool(){
+
+    const input =
+        document.getElementById(
+            "poolCode"
+        );
+
+
+    const code =
+        normalizeCode(
+            input.value
+        );
+
+
+    if(
+        !validStockCode(code)
+    ){
+
+        alert(
+            "请输入正确的沪深A股代码。\n\n北交所已经排除。"
+        );
+
+        return;
+
+    }
+
+
+    if(
+        appData.stockPool
+            .includes(code)
+    ){
+
+        alert(
+            "该股票已经在我的股票池中。"
+        );
+
+        return;
+
+    }
+
+
+    /*
+      如果当前行情中发现 ST，
+      不允许加入。
+    */
+
+    const q =
+        quotes.find(
+            item =>
+                item.code === code
+        );
+
+
+    if(
+        q &&
+        isExcludedName(q.name)
+    ){
+
+        alert(
+            "ST / *ST 股票不纳入本平台股票池。"
+        );
+
+        return;
+
+    }
+
+
+    appData.stockPool.push(
+        code
+    );
+
+
+    saveData();
+
+
+    input.value = "";
+
+
+    renderPool();
+
+    refreshQuotes();
+
+}
+
+
+function addSearchStock(){
+
+    const keyword =
+        document
+            .getElementById(
+                "searchInput"
+            )
+            .value
+            .trim();
+
+
+    const found =
+        quotes.find(
+            q =>
+                q.code === keyword ||
+                q.name === keyword
+        );
+
+
+    if(!found){
+
+        alert(
+            "请输入当前行情列表中的股票代码或名称。"
+        );
+
+        return;
+
+    }
+
+
+    if(
+        appData.stockPool
+            .includes(found.code)
+    ){
+
+        alert(
+            "该股票已经在股票池中。"
+        );
+
+        return;
+
+    }
+
+
+    appData.stockPool.push(
+        found.code
+    );
+
+
+    saveData();
+
+    renderPool();
+
+}
+
+
+function removeFromPool(
+    code
+){
+
+    appData.stockPool =
+        appData.stockPool.filter(
+            x => x !== code
+        );
+
+
+    saveData();
+
+    renderPool();
+
+    refreshQuotes();
+
+}
+
+
+/* =====================================================
+   持仓
+===================================================== */
+
+function addHolding(){
+
+    const input =
+        document.getElementById(
+            "holdingCode"
+        );
+
+
+    const code =
+        normalizeCode(
+            input.value
+        );
+
+
+    if(
+        !validStockCode(code)
+    ){
+
+        alert(
+            "请输入正确的沪深A股代码。\n\n北交所已经排除。"
+        );
+
+        return;
+
+    }
+
+
+    if(
+        appData.holdings
+            .includes(code)
+    ){
+
+        alert(
+            "该股票已经在我的持仓中。"
+        );
+
+        return;
+
+    }
+
+
+    const q =
+        quotes.find(
+            item =>
+                item.code === code
+        );
+
+
+    if(
+        q &&
+        isExcludedName(q.name)
+    ){
+
+        alert(
+            "ST / *ST 股票不纳入本平台。"
+        );
+
+        return;
+
+    }
+
+
+    appData.holdings.push(
+        code
+    );
+
+
+    saveData();
+
+
+    input.value = "";
+
+
+    renderHoldings();
+
+    refreshQuotes();
+
+}
+
+
+function removeHolding(
+    code
+){
+
+    appData.holdings =
+        appData.holdings.filter(
+            x => x !== code
+        );
+
+
+    saveData();
+
+    renderHoldings();
+
+    refreshQuotes();
+
+}
+
+
+/* =====================================================
+   获取行情
+===================================================== */
+
+function getQuote(
+    code
+){
+
+    return quotes.find(
+        q =>
+            q.code === code
+    );
+
+}
+
+
+/* =====================================================
+   股票池显示
+===================================================== */
+
+function renderPool(){
+
+    const box =
+        document.getElementById(
+            "poolList"
+        );
+
+
+    box.innerHTML = "";
+
+
+    if(
+        !appData.stockPool.length
+    ){
+
+        box.innerHTML =
+            `
+            <div class="message">
+                我的股票池目前为空。
+            </div>
+            `;
+
+        return;
+
+    }
+
+
+    for(
+        const code of
+        appData.stockPool
+    ){
+
+        const q =
+            getQuote(code);
+
+
+        const name =
+            q
+                ? q.name
+                : "行情未返回";
+
+
+        const price =
+            q
+                ? formatNumber(
+                    q.price,
+                    2
+                  )
+                : "--";
+
+
+        const change =
+            q
+                ? formatSigned(
+                    q.changePercent,
+                    2
+                  ) + "%"
+                : "--";
+
+
+        const tags =
+            appData.stockTags[
+                code
+            ] || [];
+
+
+        const card =
+            document.createElement(
+                "div"
+            );
+
+
+        card.className =
+            "stock-card";
+
+
+        card.innerHTML = `
+
+<strong>
+${escapeHTML(name)}
+</strong>
+
+<div class="code">
+${escapeHTML(code)}
+</div>
+
+<div style="margin-top:8px;">
+现价：
+<b>${price}</b>
+</div>
+
+<div style="margin-top:5px;">
+涨跌幅：
+${change}
+</div>
+
+<div style="margin-top:7px;">
+
+${
+    tags.length
+
+        ? tags.map(
+            tag =>
+                `
+                <span class="tag">
+                ${escapeHTML(tag)}
+                </span>
+                `
+          ).join("")
+
+        : `
+          <span class="small">
+          暂无标签
+          </span>
+          `
+}
+
+</div>
+
+
+<div class="stock-actions">
+
+<button
+    onclick="openTagModal('${escapeAttr(code)}')"
+>
+添加/修改标签
+</button>
+
+
+<button
+    class="danger"
+    onclick="removeFromPool('${escapeAttr(code)}')"
+>
+移除
+</button>
+
+</div>
+
+`;
+
+
+        box.appendChild(
+            card
+        );
+
+    }
+
+}
+
+
+/* =====================================================
+   持仓显示
+===================================================== */
+
+function renderHoldings(){
+
+    const box =
+        document.getElementById(
+            "holdingList"
+        );
+
+
+    box.innerHTML = "";
+
+
+    if(
+        !appData.holdings.length
+    ){
+
+        box.innerHTML =
+            `
+            <div class="message">
+                我的持仓目前为空。
+            </div>
+            `;
+
+        return;
+
+    }
+
+
+    for(
+        const code of
+        appData.holdings
+    ){
+
+        const q =
+            getQuote(code);
+
+
+        const name =
+            q
+                ? q.name
+                : "行情未返回";
+
+
+        const price =
+            q
+                ? formatNumber(
+                    q.price,
+                    2
+                  )
+                : "--";
+
+
+        const change =
+            q
+                ? formatSigned(
+                    q.changePercent,
+                    2
+                  ) + "%"
+                : "--";
+
+
+        const card =
+            document.createElement(
+                "div"
+            );
+
+
+        card.className =
+            "stock-card";
+
+
+        card.innerHTML = `
+
+<strong>
+${escapeHTML(name)}
+</strong>
+
+<div class="code">
+${escapeHTML(code)}
+</div>
+
+<div style="margin-top:8px;">
+现价：
+<b>${price}</b>
+</div>
+
+<div style="margin-top:5px;">
+涨跌幅：
+${change}
+</div>
+
+
+<div class="stock-actions">
+
+<button
+    class="danger"
+    onclick="removeHolding('${escapeAttr(code)}')"
+>
+移除持仓
+</button>
+
+</div>
+
+`;
+
+
+        box.appendChild(
+            card
+        );
+
+    }
+
+}
+
+
+/* =====================================================
+   标签
+===================================================== */
+
+function createTag(){
+
+    const input =
+        document.getElementById(
+            "tagName"
+        );
+
+
+    const name =
+        input.value.trim();
+
+
+    if(!name){
+
+        alert(
+            "请输入标签名称。"
+        );
+
+        return;
+
+    }
+
+
+    if(
+        appData.tags.includes(name)
+    ){
+
+        alert(
+            "这个标签已经存在。"
+        );
+
+        return;
+
+    }
+
+
+    appData.tags.push(
+        name
+    );
+
+
+    saveData();
+
+
+    input.value = "";
+
+
+    renderTags();
+
+}
+
+
+function deleteTag(
+    name
+){
+
+    if(
+        !confirm(
+            "确定删除标签「" +
+            name +
+            "」吗？\n\n删除标签不会删除股票。"
+        )
+    ){
+
+        return;
+
+    }
+
+
+    appData.tags =
+        appData.tags.filter(
+            x => x !== name
+        );
+
+
+    /*
+      同步删除股票上的该标签
+    */
+
+    for(
+        const code of
+        Object.keys(
+            appData.stockTags
+        )
+    ){
+
+        appData.stockTags[code] =
+            (
+                appData.stockTags[code]
+                || []
+            )
+            .filter(
+                x => x !== name
+            );
+
+    }
+
+
+    saveData();
+
+    renderTags();
+
+    renderPool();
+
+}
+
+
+function renderTags(){
+
+    const box =
+        document.getElementById(
+            "tagList"
+        );
+
+
+    box.innerHTML = "";
+
+
+    if(
+        !appData.tags.length
+    ){
+
+        box.innerHTML =
+            `
+            <div class="message">
+                目前没有标签。
+            </div>
+            `;
+
+        return;
+
+    }
+
+
+    for(
+        const tag of
+        appData.tags
+    ){
+
+        const card =
+            document.createElement(
+                "div"
+            );
+
+
+        card.className =
+            "stock-card";
+
+
+        card.innerHTML = `
+
+<strong>
+${escapeHTML(tag)}
+</strong>
+
+
+<div class="stock-actions">
+
+<button
+    class="danger"
+    onclick="deleteTag('${escapeAttr(tag)}')"
+>
+删除标签
+</button>
+
+</div>
+
+`;
+
+
+        box.appendChild(
+            card
+        );
+
+    }
+
+}
+
+
+/* =====================================================
+   标签 Modal
+===================================================== */
+
+function openTagModal(
+    code
+){
+
+    currentTagStock =
+        code;
+
+
+    const box =
+        document.getElementById(
+            "tagCheckboxes"
+        );
+
+
+    box.innerHTML = "";
+
+
+    if(
+        !appData.tags.length
+    ){
+
+        box.innerHTML =
+            `
+            <div class="small">
+                目前还没有标签。
+                请先在“标签管理”创建标签。
+            </div>
+            `;
+
+    }
+    else{
+
+        const current =
+            appData.stockTags[
+                code
+            ] || [];
+
+
+        for(
+            const tag of
+            appData.tags
+        ){
+
+            const label =
+                document.createElement(
+                    "label"
+                );
+
+
+            const checked =
+                current.includes(tag)
+                    ? "checked"
+                    : "";
+
+
+            label.innerHTML = `
+
+<input
+    type="checkbox"
+    value="${escapeAttr(tag)}"
+    ${checked}
+>
+
+${escapeHTML(tag)}
+
+`;
+
+
+            box.appendChild(
+                label
+            );
+
+        }
+
+    }
+
+
+    document
+        .getElementById(
+            "tagModal"
+        )
+        .classList.add(
+            "show"
+        );
+
+}
+
+
+function closeTagModal(){
+
+    currentTagStock =
+        null;
+
+
+    document
+        .getElementById(
+            "tagModal"
+        )
+        .classList.remove(
+            "show"
+        );
+
+}
+
+
+function saveStockTags(){
+
+    if(
+        !currentTagStock
+    ){
+
+        return;
+
+    }
+
+
+    const checked =
+        [
+            ...document.querySelectorAll(
+                "#tagCheckboxes input:checked"
+            )
+        ]
+        .map(
+            input =>
+                input.value
+        );
+
+
+    appData.stockTags[
+        currentTagStock
+    ] = checked;
+
+
+    saveData();
+
+    closeTagModal();
+
+    renderPool();
+
+}
+
+
+/* =====================================================
+   格式化
+===================================================== */
+
+function formatNumber(
+    value,
+    digits
+){
+
+    const n =
+        Number(value);
+
+
+    if(
+        !Number.isFinite(n)
+    ){
+
+        return "--";
+
+    }
+
+
+    return n.toLocaleString(
+        "zh-CN",
+        {
+            minimumFractionDigits:
+                digits,
+
+            maximumFractionDigits:
+                digits
+        }
+    );
+
+}
+
+
+function formatSigned(
+    value,
+    digits
+){
+
+    const n =
+        Number(value);
+
+
+    if(
+        !Number.isFinite(n)
+    ){
+
+        return "--";
+
+    }
+
+
+    const text =
+        formatNumber(
+            Math.abs(n),
+            digits
+        );
+
+
+    if(
+        n > 0
+    ){
+
+        return "+" + text;
+
+    }
+
+
+    if(
+        n < 0
+    ){
+
+        return "-" + text;
+
+    }
+
+
+    return text;
+
+}
+
+
+/* =====================================================
+   XSS
+===================================================== */
+
+function escapeHTML(
+    value
+){
+
+    return String(
+        value || ""
+    )
+    .replace(
+        /&/g,
+        "&amp;"
+    )
+    .replace(
+        /</g,
+        "&lt;"
+    )
+    .replace(
+        />/g,
+        "&gt;"
+    )
+    .replace(
+        /"/g,
+        "&quot;"
+    )
+    .replace(
+        /'/g,
+        "&#039;"
+    );
+
+}
+
+
+function escapeAttr(
+    value
+){
+
+    return escapeHTML(
+        value
+    );
+
+}
+
+
+/* =====================================================
+   市场状态
+===================================================== */
+
+function getChinaTime(){
+
+    const now =
+        new Date();
+
+
+    /*
+      使用浏览器当前时间，
+      转成中国时间。
+    */
+
+    return new Date(
+        now.toLocaleString(
+            "en-US",
+            {
+                timeZone:
+                    "Asia/Shanghai"
+            }
+        )
+    );
+
+}
+
+
+function updateMarketStatus(){
+
+    const cn =
+        getChinaTime();
+
+
+    const day =
+        cn.getDay();
+
+
+    const hour =
+        cn.getHours();
+
+
+    const minute =
+        cn.getMinutes();
+
+
+    const total =
+        hour * 60 +
+        minute;
+
+
+    let status =
+        "休市";
+
+
+    if(
+        day === 0 ||
+        day === 6
+    ){
+
+        status =
+            "休市 · 周末";
+
+    }
+    else if(
+        total >= 570 &&
+        total < 690
+    ){
+
+        status =
+            "交易中 · 上午";
+
+    }
+    else if(
+        total >= 690 &&
+        total < 780
+    ){
+
+        status =
+            "午间休市";
+
+    }
+    else if(
+        total >= 780 &&
+        total <= 900
+    ){
+
+        status =
+            "交易中 · 下午";
+
+    }
+    else{
+
+        status =
+            "休市 · 盘后";
+
+    }
+
+
+    document
+        .getElementById(
+            "marketStatus"
+        )
+        .textContent =
+            status;
+
+
+    /*
+      这里不直接控制行情连接灯，
+      所以连接灯仍然由真实行情决定。
+    */
+
+}
+
+
+/* =====================================================
+   初始化
+===================================================== */
+
+function init(){
+
+    renderPool();
+
+    renderHoldings();
+
+    renderTags();
+
+    updateMarketStatus();
+
+    refreshQuotes();
+
+}
+
+
+/* =====================================================
+   定时
+===================================================== */
+
+/*
+  市场状态：
+  每30秒检查。
+*/
+
+setInterval(
+    updateMarketStatus,
+    30000
+);
+
+
+/*
+  真实行情：
+  每30秒刷新。
+
+  后续进入正式实时策略版后，
+  再根据你的5分钟筛选周期调整。
+*/
+
+setInterval(
+    refreshQuotes,
+    30000
+);
+
+
+init();
+
+</script>
+
+</body>
+
+</html>
