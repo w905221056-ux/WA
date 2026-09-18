@@ -1,0 +1,468 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>A股实时选股平台 V5.5｜自选池/持仓逻辑修正版</title>
+<style>
+:root{--bg:#f4f6fa;--card:#fff;--ink:#17223b;--muted:#71809b;--line:#dfe5ef;--blue:#28469b;--green:#18a66a;--red:#d9534f;--gold:#b67b18;--dark:#091222}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",Arial,sans-serif}
+header{background:var(--dark);color:#fff;padding:28px 20px 22px}.title{font-size:28px;font-weight:800}.sub{margin-top:10px;color:#b8c4d9;line-height:1.7}.status{margin-top:18px;background:#172640;border-left:6px solid #5b7bd5;border-radius:16px;padding:14px 16px;font-size:15px}.status.ok{border-left-color:#48bf7b}.status.bad{border-left-color:#df5b57}.bar{height:8px;background:#e9edf5;border-radius:8px;margin-top:16px;overflow:hidden}.bar i{display:block;height:100%;width:0;background:#7188d4;transition:.2s}.count{margin-top:12px;color:#b9c5da}
+nav{display:flex;gap:10px;padding:14px 10px;background:#fff;border-bottom:1px solid var(--line);overflow:auto}nav button{border:0;background:#eef1f6;color:#34415d;border-radius:22px;padding:12px 20px;font-size:16px;white-space:nowrap}nav button.active{background:var(--blue);color:#fff}
+main{padding:18px 14px 60px;max-width:1500px;margin:auto}.page{display:none}.page.active{display:block}.grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px}.card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:18px}.kpi b{display:block;font-size:30px;margin:6px 0}.muted{color:var(--muted)}.tools{display:flex;gap:10px;flex-wrap:wrap;margin:16px 0}.tools input,.tools select,.modal input,.modal select{border:1px solid #ccd5e5;border-radius:12px;padding:12px 14px;font-size:15px;background:#fff;color:var(--ink)}button.primary,button.secondary,button.danger{border:0;border-radius:12px;padding:12px 16px;font-size:15px}button.primary{background:var(--blue);color:#fff}button.secondary{background:#eaf0f8;color:#263858}button.danger{background:#fbe9e8;color:#a33430}.hint{background:#fff8e7;border:1px solid #f0d89c;color:#735516;padding:14px 16px;border-radius:16px;line-height:1.65;margin:14px 0}
+.tablewrap{background:#fff;border:1px solid var(--line);border-radius:18px;overflow:auto}.table{width:100%;border-collapse:collapse;min-width:1100px}.table th,.table td{padding:11px 9px;border-bottom:1px solid #edf0f5;text-align:right;white-space:nowrap}.table th:first-child,.table td:first-child,.table th:nth-child(2),.table td:nth-child(2){text-align:left}.table th{background:#f7f8fb;color:#5c6880;font-weight:700;position:sticky;top:0}.up{color:#d44747}.down{color:#15925e}.signalA{color:#c53b38;font-weight:800}.signalB{color:#a86d11;font-weight:800}.signalC{color:#3567b7;font-weight:800}.tag{display:inline-block;background:#eef2fb;color:#3d568f;border-radius:10px;padding:3px 7px;margin:2px;font-size:12px}
+.pool-head{display:flex;justify-content:space-between;gap:10px;align-items:center;flex-wrap:wrap}.pool-tabs{display:flex;gap:8px;margin:12px 0}.pool-tabs button{border:1px solid var(--line);background:#fff;border-radius:12px;padding:10px 14px}.pool-tabs button.active{background:#e9eefc;color:var(--blue);border-color:#b8c7ef}.empty{padding:35px;text-align:center;color:var(--muted)}
+.modalback{position:fixed;inset:0;background:rgba(0,0,0,.48);display:none;align-items:center;justify-content:center;padding:18px;z-index:20}.modalback.show{display:flex}.modal{width:min(520px,100%);background:#fff;border-radius:20px;padding:20px}.modal h3{margin-top:0}.formrow{display:grid;gap:8px;margin:12px 0}.modal-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:18px}.checkpanel{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;border:1px solid var(--line);padding:10px;border-radius:12px}.checkpanel label{display:flex;gap:7px;align-items:center}.tagselect{position:relative}.tagselect-btn{width:100%;text-align:left;border:1px solid #ccd5e5;border-radius:12px;padding:12px 14px;background:#fff;color:var(--ink);font-size:15px}.tagdropdown{display:none;position:absolute;left:0;right:0;top:calc(100% + 6px);z-index:30;background:#fff;border:1px solid #ccd5e5;border-radius:12px;box-shadow:0 12px 30px rgba(0,0,0,.14);max-height:280px;overflow:auto;padding:8px}.tagselect.open .tagdropdown{display:block}.tagdropdown label{display:flex;align-items:center;gap:8px;padding:9px 8px;border-radius:8px}.tagdropdown label:hover{background:#f3f6fb}.tag-empty{padding:10px;color:var(--muted)}
+.small{font-size:13px}.right{float:right}.oktext{color:#158a59}.badtext{color:#c63e3a}.nowrap{white-space:nowrap}
+@media(max-width:900px){.grid{grid-template-columns:repeat(2,minmax(0,1fr))}.title{font-size:25px}.table{min-width:1150px}}
+@media(max-width:520px){.grid{grid-template-columns:1fr 1fr}.card{padding:14px}.kpi b{font-size:25px}header{padding:24px 18px}}
+</style>
+</head>
+<body>
+<header>
+  <div class="title">A股实时选股平台 V5.5</div>
+  <div class="sub">重点稳定版 · 我的股票池 · 我的持仓 · 实时行情 · MA5/8/13/21/34/55 · A/B/C买入 · 持仓卖出</div>
+  <div id="status" class="status">正在初始化数据接口……</div>
+  <div class="bar"><i id="progress"></i></div>
+  <div id="count" class="count">自选 0 · 持仓 0 · 已连接 0 · MA 0</div>
+</header>
+<nav>
+  <button class="nav active" data-page="pool">我的股票池</button>
+  <button class="nav" data-page="hold">我的持仓</button>
+  <button class="nav" data-page="buy">买入筛选</button>
+  <button class="nav" data-page="sell">卖出筛选</button>
+  <button class="nav" data-page="market">实时行情</button>
+  <button class="nav" data-page="tags">标签管理</button>
+</nav>
+<main>
+<section id="pool" class="page active">
+  <div class="pool-head"><h2>我的股票池</h2><div class="tools"><button class="primary" onclick="openAdd('pool')">＋ 添加股票</button><button class="danger" onclick="batchRemovePool()">批量删除</button><button class="secondary" onclick="backupPool()">备份自选数据库</button><button class="secondary" onclick="document.getElementById('poolBackupFile').click()">导入自选数据库</button><input id="poolBackupFile" type="file" accept="application/json,.json" style="display:none" onchange="importPoolBackup(this)"></div></div>
+  <div class="grid">
+    <div class="card kpi"><span>股票数量</span><b id="poolCount">0</b><span class="muted">独立于持仓</span></div>
+    <div class="card kpi"><span>实时行情</span><b id="poolLive">0</b><span class="muted">最近一次成功解析</span></div>
+    <div class="card kpi"><span>MA就绪</span><b id="poolMA">0</b><span class="muted">六条均线完整</span></div>
+    <div class="card kpi"><span>买入信号</span><b id="poolBuy">0</b><span class="muted">当前有效</span></div>
+  </div>
+  <div class="tools"><input id="poolSearch" placeholder="搜索代码、名称、标签" oninput="renderPool()"><button class="secondary" onclick="refreshAll()">立即刷新</button><button class="secondary" onclick="loadAllMA()">重新计算MA</button></div>
+  <div class="hint">这里是重点工作区。每一只自选股票都必须显示实际行情、MA5/8/13/21/34/55，并可直接参与买入筛选。标签只用于整理，不参与筛选逻辑。</div>
+  <div class="tablewrap"><table class="table"><thead><tr><th><input type="checkbox" id="poolSelectAll" onchange="togglePoolSelectAll(this.checked)" aria-label="全选自选股票"></th><th>代码</th><th>名称</th><th>最新价</th><th>昨收</th><th>涨跌</th><th>涨跌幅</th><th>MA5</th><th>MA8</th><th>MA13</th><th>MA21</th><th>MA34</th><th>MA55</th><th>信号</th><th>标签</th><th>操作</th></tr></thead><tbody id="poolBody"></tbody></table></div>
+</section>
+<section id="hold" class="page">
+  <div class="pool-head"><h2>我的持仓</h2><button class="primary" onclick="openAdd('hold')">＋ 添加持仓</button></div>
+  <div class="grid">
+    <div class="card kpi"><span>持仓数量</span><b id="holdCount">0</b><span class="muted">只保存股票代码</span></div>
+    <div class="card kpi"><span>实时行情</span><b id="holdLive">0</b><span class="muted">最近一次成功解析</span></div>
+    <div class="card kpi"><span>MA就绪</span><b id="holdMA">0</b><span class="muted">六条均线完整</span></div>
+    <div class="card kpi"><span>卖出信号</span><b id="holdSell">0</b><span class="muted">当前有效</span></div>
+  </div>
+  <div class="tools"><input id="holdSearch" placeholder="搜索代码或名称" oninput="renderHold()"><button class="secondary" onclick="refreshAll()">立即刷新</button><button class="secondary" onclick="loadAllMA()">重新计算MA</button></div>
+  <div class="hint">持仓筛选只作用于持仓池。卖出条件为：跌破MA5、放量滞涨/放量大跌、当前5分钟K长上影线。页面只显示“卖出”，不把原因混入信号文字。</div>
+  <div class="tablewrap"><table class="table"><thead><tr><th>代码</th><th>名称</th><th>最新价</th><th>昨收</th><th>涨跌</th><th>涨跌幅</th><th>MA5</th><th>MA8</th><th>MA13</th><th>MA21</th><th>MA34</th><th>MA55</th><th>信号</th><th>操作</th></tr></thead><tbody id="holdBody"></tbody></table></div>
+</section>
+<section id="buy" class="page">
+  <h2>买入筛选</h2>
+  <div class="card">
+    <div class="tools"><span class="secondary" style="display:inline-block">筛选范围：我的股票池</span><button class="primary" onclick="runBuy()">立即执行筛选</button></div>
+    <div class="hint">当前版本优先保证“我的股票池”真实、完整、可筛选。买入逻辑：当日只要发生过一次MA5上穿MA8和MA13即可；上涨=最新价&gt;昨收；放量=当日同期累计量≥过去3个交易日同期均量×1.5；随后按严格A/B/C结构判级。界面只显示A级买入、B级买入、C级买入。</div>
+  </div>
+  <div class="tablewrap" style="margin-top:14px"><table class="table"><thead><tr><th>代码</th><th>名称</th><th>最新价</th><th>MA5</th><th>MA8</th><th>MA13</th><th>MA21</th><th>MA34</th><th>MA55</th><th>买入信号</th></tr></thead><tbody id="buyBody"></tbody></table></div>
+  <div id="buyEmpty" class="empty"></div>
+</section>
+<section id="sell" class="page">
+  <h2>卖出筛选</h2>
+  <div class="card"><div class="tools"><button class="primary" onclick="runSell()">立即执行持仓卖出筛选</button></div><div class="hint">只检查我的持仓。满足任一卖出条件即显示“卖出”；条件全部消失后信号清除。盘中状态每分钟更新一次。</div></div>
+  <div class="tablewrap" style="margin-top:14px"><table class="table"><thead><tr><th>代码</th><th>名称</th><th>最新价</th><th>昨收</th><th>MA5</th><th>MA8</th><th>MA13</th><th>MA21</th><th>MA34</th><th>MA55</th><th>信号</th></tr></thead><tbody id="sellBody"></tbody></table></div><div id="sellEmpty" class="empty"></div>
+</section>
+<section id="market" class="page">
+  <h2>实时行情</h2>
+  <div class="card"><div class="hint">为了避免再次出现“5000多只加载失败、反而自选和持仓也不可用”的情况，本版本把稳定性优先级调整为：自选池/持仓池 → 实时行情 → 六条MA → 筛选逻辑。全市场数据不作为自选和持仓功能的前置条件。</div><div class="tools"><input id="marketSearch" placeholder="搜索代码或名称" oninput="renderMarket()"><button class="secondary" onclick="refreshAll()">立即刷新</button></div></div>
+  <div class="tablewrap" style="margin-top:14px"><table class="table"><thead><tr><th>代码</th><th>名称</th><th>最新价</th><th>昨收</th><th>涨跌</th><th>涨跌幅</th><th>MA5</th><th>MA8</th><th>MA13</th><th>MA21</th><th>MA34</th><th>MA55</th></tr></thead><tbody id="marketBody"></tbody></table></div>
+</section>
+<section id="tags" class="page">
+  <div class="pool-head"><h2>标签管理</h2><button class="primary" onclick="newTag()">＋ 新建标签</button></div>
+  <div class="card"><div id="tagList"></div></div>
+</section>
+</main>
+<div id="modalBack" class="modalback"><div class="modal" id="modal"></div></div>
+<script>
+'use strict';
+const KEY_POOL='A_SHARE_V5_POOL';
+const KEY_HOLD='A_SHARE_V5_HOLD';
+const KEY_TAGS='A_SHARE_V5_TAGS';
+let pool=load(KEY_POOL,[]), hold=load(KEY_HOLD,[]), tags=load(KEY_TAGS,['核心观察','趋势','事件']);
+(function migrateV41(){try{if(!pool.length){const old=JSON.parse(localStorage.getItem('A股V41_POOL')||'[]');pool=old.map(x=>typeof x==='string'?x:x.code).filter(x=>/^\d{6}$/.test(x));}if(!hold.length){const old=JSON.parse(localStorage.getItem('A股V41_HOLDINGS')||'[]');hold=old.map(x=>typeof x==='string'?x:x.code).filter(x=>/^\d{6}$/.test(x));}const oldTags=JSON.parse(localStorage.getItem('A股V41_TAGS')||'null');if((!tags||!tags.length)&&Array.isArray(oldTags))tags=oldTags;save()}catch(e){}})();
+let quotes={}, mas={}, buySignals={}, sellSignals={}, minuteCache={}, fiveDayCache={};
+let refreshBusy=false;
+function load(k,d){try{const v=JSON.parse(localStorage.getItem(k)||'null');return Array.isArray(v)?v:d}catch(e){return d}}
+function save(){localStorage.setItem(KEY_POOL,JSON.stringify(pool));localStorage.setItem(KEY_HOLD,JSON.stringify(hold));localStorage.setItem(KEY_TAGS,JSON.stringify(tags))}
+function market(code){return /^6|^9|^68|^69/.test(code)?'sh':'sz'}
+function tq(code){return market(code)+code}
+function setStatus(t,ok=true){const e=document.getElementById('status');e.textContent=t;e.className='status '+(ok?'ok':'bad')}
+function progress(n,total){document.getElementById('progress').style.width=(total?Math.round(n/total*100):0)+'%';document.getElementById('count').textContent=`自选 ${pool.length} · 持仓 ${hold.length} · 已连接 ${n} · MA ${Object.keys(mas).length}`}
+function num(v){const n=parseFloat(v);return Number.isFinite(n)?n:null}
+function fmt(v){return v==null||!Number.isFinite(v)?'—':v.toFixed(2)}
+function fmtPct(v){return v==null?'—':(v>=0?'+':'')+v.toFixed(2)+'%'}
+function unique(a){return [...new Set(a)]}
+function allCodes(){return unique([...pool,...hold])}
+function esc(s){return String(s??'').replace(/[&<>'"]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[m]))}
+function loadScript(src,timeout=9000){return new Promise((resolve,reject)=>{const s=document.createElement('script');let done=false;const t=setTimeout(()=>{if(done)return;done=true;s.remove();reject(new Error('timeout'))},timeout);s.onload=()=>{if(done)return;done=true;clearTimeout(t);s.remove();resolve()};s.onerror=()=>{if(done)return;done=true;clearTimeout(t);s.remove();reject(new Error('network'))};s.src=src+'&_='+Date.now();document.head.appendChild(s)})}
+async function getQuote(codes){
+  const out={}; if(!codes.length)return out;
+  const list=codes.map(tq).join(',');
+  try{await loadScript('https://qt.gtimg.cn/q='+encodeURIComponent(list),8000)}catch(e){
+    try{await loadScript('https://web.sqt.gtimg.cn/q='+encodeURIComponent(list),8000)}catch(e2){throw new Error('腾讯实时行情接口连接失败')}
+  }
+  codes.forEach(code=>{const key='v_'+tq(code);const raw=window[key];if(typeof raw!=='string')return;const s=raw.replace(/^v_[^=]+="/,'').replace(/";?$/,'');const a=s.split('~');if(a.length<35)return;const price=num(a[3]),prev=num(a[4]);if(price==null||prev==null)return;out[code]={code,name:a[1]||code,price,prev,open:num(a[5]),volume:num(a[6]),high:num(a[33]),low:num(a[34]),amount:num(a[37]),pct:num(a[32]),time:a[30]||'',ts:Date.now()}});return out
+}
+function klineVar(code){return 'kline_day'+tq(code)}
+function readGlobalObject(prefix,code){
+  const exact=[prefix+tq(code),prefix+'qfq'+tq(code),'kline_day'+tq(code),'kline_dayqfq'+tq(code),'min_data_'+tq(code),'day_data_'+tq(code)];
+  for(const k of exact){let v=window[k];if(v){if(typeof v==='string'){try{v=JSON.parse(v)}catch(e){try{v=JSON.parse(v.replace(/^.*?=/,''))}catch(e2){continue}}}return v}}
+  return null
+}
+function emSecid(code){return (/^(6|68|69)/.test(code)?'1.':'0.')+code}
+function jsonp(url,timeout=10000){return new Promise((resolve,reject)=>{const cb='__emcb_'+Date.now()+'_'+Math.random().toString(36).slice(2);let done=false;const s=document.createElement('script');const timer=setTimeout(()=>{finish(new Error('JSONP超时'))},timeout);function finish(err,data){if(done)return;done=true;clearTimeout(timer);try{delete window[cb]}catch(e){}s.remove();err?reject(err):resolve(data)}window[cb]=data=>finish(null,data);s.onerror=()=>finish(new Error('JSONP网络错误'));s.src=url+(url.includes('?')?'&':'?')+'cb='+cb+'&_='+Date.now();document.head.appendChild(s)})}
+async function getDaily(code){
+  const secid=emSecid(code);
+  const base='https://push2his.eastmoney.com/api/qt/stock/kline/get?secid='+encodeURIComponent(secid)+'&klt=101&fqt=0&beg=0&end=20500101&lmt=120&fields1=f1,f2,f3,f4,f5,f6&fields2=f51,f52,f53,f54,f55,f56,f57,f58,f59,f60,f61';
+  try{
+    const obj=await jsonp(base,10000);
+    const rows=obj?.data?.klines;
+    if(Array.isArray(rows)&&rows.length){
+      return rows.map(r=>{const a=String(r).split(',');return {date:a[0],open:num(a[1]),close:num(a[2]),high:num(a[3]),low:num(a[4]),volume:num(a[5])}}).filter(x=>x.close!=null);
+    }
+  }catch(e){}
+  // 腾讯作为历史K线备用源。该接口返回 JSONP/变量形式，需同时兼容 day/qfqday。
+  const key='kline_day'+tq(code);
+  try{await loadScript('https://web.ifzq.gtimg.cn/appstock/app/fqkline/get?_var='+key+'&param='+encodeURIComponent(tq(code)+',day,,,120,none'),9000)}catch(e){return null}
+  let obj=window[key];
+  if(typeof obj==='string'){try{obj=JSON.parse(obj)}catch(e){try{obj=JSON.parse(obj.replace(/^.*?=/,''))}catch(e2){obj=null}}}
+  const d=obj?.data?.[tq(code)];if(!d)return null;
+  const rows=d.day||d.qfqday||[];if(!Array.isArray(rows))return null;
+  return rows.map(r=>({date:r[0],open:num(r[1]),close:num(r[2]),high:num(r[3]),low:num(r[4]),volume:num(r[5])})).filter(x=>x.close!=null)
+}
+async function getMinute(code){
+  const key='min_data_'+tq(code);
+  try{await loadScript('https://web.ifzq.gtimg.cn/appstock/app/minute/query?_var='+key+'&code='+tq(code)+'&r='+Math.random(),9000)}catch(e){return null}
+  let obj=readGlobalObject('',code); if(!obj){obj=window[key]}
+  if(typeof obj==='string'){try{obj=JSON.parse(obj)}catch(e){try{obj=JSON.parse(obj.replace(/^.*?=/,''))}catch(e2){return null}}}
+  const d=obj&&obj.data&&obj.data[tq(code)];if(!d)return null;
+  const rows=d.data&&d.data.data?d.data.data:[];
+  if(!Array.isArray(rows))return null;
+  const out=rows.map(x=>{const a=String(x).trim().split(/\s+/);return {time:a[0],price:num(a[1]),volume:num(a[2])}}).filter(x=>x.price!=null&&x.time);
+  minuteCache[code]=out;return out
+}
+async function getFiveDay(code){
+  const key='day_data_'+tq(code);
+  try{await loadScript('https://web.ifzq.gtimg.cn/appstock/app/day/query?_var='+key+'&code='+tq(code)+'&r='+Math.random(),9000)}catch(e){return null}
+  let obj=window[key];if(typeof obj==='string'){try{obj=JSON.parse(obj)}catch(e){try{obj=JSON.parse(obj.replace(/^.*?=/,''))}catch(e2){obj=null}}}
+  const d=obj&&obj.data&&obj.data[tq(code)];if(!d)return null;
+  const days=Array.isArray(d.data)?d.data:[];
+  const out=days.map(day=>({date:day.date,data:(day.data||[]).map(x=>{const a=String(x).trim().split(/\s+/);return {time:a[0],price:num(a[1]),volume:num(a[2])}}).filter(x=>x.price!=null&&x.time)}));
+  fiveDayCache[code]=out;return out
+}
+async function calcMA(code){
+  const q=quotes[code]; if(!q||q.price==null)return null;
+  const rows=await getDaily(code); if(!rows||!rows.length)return null;
+  const dateFromQuote=q.time&&String(q.time).match(/^(\d{4})(\d{2})(\d{2})/);
+  const marketDate=dateFromQuote?dateFromQuote[1]+'-'+dateFromQuote[2]+'-'+dateFromQuote[3]:new Date().toLocaleDateString('sv-SE');
+  // 日K中若已经包含今天，则去掉今天这一根，再用实时价作为“今天”的当前收盘价。
+  const clean=rows.filter(r=>r.date && String(r.date).slice(0,10)!==marketDate);
+  const out={historyCount:clean.length+1,updated:Date.now(),source:'Eastmoney daily K + realtime'};
+  [5,8,13,21,34,55].forEach(n=>{
+    const arr=clean.slice(-(n-1)).map(x=>x.close).filter(Number.isFinite);
+    arr.push(q.price);
+    out[n]=arr.length?arr.reduce((a,b)=>a+b,0)/arr.length:null;
+  });
+  return out;
+}
+async function loadAllMA(){
+  const codes=allCodes();let done=0;progress(done,codes.length);setStatus('正在计算自选池/持仓六条均线……');
+  for(const c of codes){try{const m=await calcMA(c);if(m)mas[c]=m}catch(e){}done++;progress(done,codes.length);renderAll()}
+  const ready=codes.filter(c=>mas[c]&&[5,8,13,21,34,55].every(n=>mas[c][n]!=null)).length;
+  setStatus(`均线计算完成：${ready}/${codes.length} 只` ,true);renderAll()
+}
+async function refreshAll(){if(refreshBusy)return;refreshBusy=true;const codes=allCodes();if(!codes.length){setStatus('请先添加自选股票或持仓股票。',false);refreshBusy=false;return}setStatus('正在连接实时行情……',true);progress(0,codes.length);try{const got=await getQuote(codes);quotes={...quotes,...got};const ok=Object.keys(got).length;progress(ok,codes.length);if(!ok)throw new Error('没有解析到实时行情');setStatus(`实时行情连接成功：${ok}/${codes.length} 只`,true);renderAll();await loadAllMA();}catch(e){setStatus('实时行情连接失败：'+e.message,false);renderAll()}finally{refreshBusy=false}}
+function grade(m){if(!m)return'';const a=[5,8,13].map(n=>m[n]);const up21=a.every(x=>x>m[21]);const up34=a.every(x=>x>m[34]);const up55=a.every(x=>x>m[55]);const b21=a.every(x=>x>m[21]);const b34=a.every(x=>x<m[34]);const b55=a.every(x=>x<m[55]);const c21=a.every(x=>x<m[21]);const c34=a.every(x=>x<m[34]);const c55=a.every(x=>x<m[55]);if(up21&&up34&&up55)return'A级买入';if(b21&&b34&&b55)return'B级买入';if(c21&&c34&&c55)return'C级买入';return''}
+function renderRows(list,bodyId,mode){
+  const b=document.getElementById(bodyId); b.innerHTML='';
+  if(!list.length){
+    const colspan=mode==='pool'?16:mode==='hold'?14:mode==='buy'?10:mode==='sell'?11:12;
+    b.innerHTML=`<tr><td colspan="${colspan}" class="empty">暂无股票</td></tr>`; return;
+  }
+  list.forEach(c=>{
+    const q=quotes[c], m=mas[c];
+    const rawSig=mode==='pool'||mode==='buy'?buySignals[c]:mode==='hold'||mode==='sell'?sellSignals[c]:'';
+    const sig=(mode==='pool'||mode==='buy')
+      ?(rawSig==='A级买入'||rawSig==='B级买入'||rawSig==='C级买入'?rawSig:'')
+      :(mode==='hold'||mode==='sell')?(rawSig==='卖出'?'卖出':''):'';
+    const cls=sig==='A级买入'?'signalA':sig==='B级买入'?'signalB':sig==='C级买入'?'signalC':sig==='卖出'?'signalSell':'';
+    const pct=q?fmtPct(q.pct):'—';
+    const ch=q&&q.price!=null&&q.prev!=null?q.price-q.prev:null;
+    let cells='';
+    if(mode==='pool'){
+      cells=`<td><input type="checkbox" class="pool-check" value="${esc(c)}" aria-label="选择${esc(c)}"></td>
+      <td>${esc(c)}</td><td>${esc(q?.name||c)}</td><td>${fmt(q?.price)}</td><td>${fmt(q?.prev)}</td>
+      <td class="${ch>0?'up':ch<0?'down':''}">${fmt(ch)}</td><td class="${q?.pct>0?'up':q?.pct<0?'down':''}">${pct}</td>
+      <td>${fmt(m?.[5])}</td><td>${fmt(m?.[8])}</td><td>${fmt(m?.[13])}</td><td>${fmt(m?.[21])}</td><td>${fmt(m?.[34])}</td><td>${fmt(m?.[55])}</td>
+      <td class="${cls}">${esc(sig)}</td>
+      <td>${(getTags(c).map(x=>'<span class="tag">'+esc(x)+'</span>').join('')||'暂无标签')}</td>
+      <td><button class="danger" onclick="removePool('${c}')">移除</button> <button class="secondary" onclick="editTags('${c}')">标签</button></td>`;
+    } else if(mode==='hold'){
+      cells=`<td>${esc(c)}</td><td>${esc(q?.name||c)}</td><td>${fmt(q?.price)}</td><td>${fmt(q?.prev)}</td>
+      <td class="${ch>0?'up':ch<0?'down':''}">${fmt(ch)}</td><td class="${q?.pct>0?'up':q?.pct<0?'down':''}">${pct}</td>
+      <td>${fmt(m?.[5])}</td><td>${fmt(m?.[8])}</td><td>${fmt(m?.[13])}</td><td>${fmt(m?.[21])}</td><td>${fmt(m?.[34])}</td><td>${fmt(m?.[55])}</td>
+      <td class="${cls}">${esc(sig)}</td><td><button class="danger" onclick="removeHold('${c}')">移除</button></td>`;
+    } else if(mode==='buy'){
+      cells=`<td>${esc(c)}</td><td>${esc(q?.name||c)}</td><td>${fmt(q?.price)}</td>
+      <td>${fmt(m?.[5])}</td><td>${fmt(m?.[8])}</td><td>${fmt(m?.[13])}</td><td>${fmt(m?.[21])}</td><td>${fmt(m?.[34])}</td><td>${fmt(m?.[55])}</td>
+      <td class="${cls}">${esc(sig)}</td>`;
+    } else if(mode==='sell'){
+      cells=`<td>${esc(c)}</td><td>${esc(q?.name||c)}</td><td>${fmt(q?.price)}</td><td>${fmt(q?.prev)}</td>
+      <td>${fmt(m?.[5])}</td><td>${fmt(m?.[8])}</td><td>${fmt(m?.[13])}</td><td>${fmt(m?.[21])}</td><td>${fmt(m?.[34])}</td><td>${fmt(m?.[55])}</td>
+      <td class="${cls}">${esc(sig)}</td>`;
+    } else {
+      cells=`<td>${esc(c)}</td><td>${esc(q?.name||c)}</td><td>${fmt(q?.price)}</td><td>${fmt(q?.prev)}</td>
+      <td class="${ch>0?'up':ch<0?'down':''}">${fmt(ch)}</td><td class="${q?.pct>0?'up':q?.pct<0?'down':''}">${pct}</td>
+      <td>${fmt(m?.[5])}</td><td>${fmt(m?.[8])}</td><td>${fmt(m?.[13])}</td><td>${fmt(m?.[21])}</td><td>${fmt(m?.[34])}</td><td>${fmt(m?.[55])}</td>`;
+    }
+    const tr=document.createElement('tr'); tr.innerHTML=cells; b.appendChild(tr);
+  });
+}
+function filtered(arr,input){const s=(document.getElementById(input)?.value||'').trim().toLowerCase();return arr.filter(c=>{const q=quotes[c];return !s||c.includes(s)||(q?.name||'').toLowerCase().includes(s)||getTags(c).some(x=>x.toLowerCase().includes(s))})}
+function renderPool(){renderRows(filtered(pool,'poolSearch'),'poolBody','pool');document.getElementById('poolCount').textContent=pool.length;document.getElementById('poolLive').textContent=pool.filter(c=>quotes[c]).length;document.getElementById('poolMA').textContent=pool.filter(c=>mas[c]).length;document.getElementById('poolBuy').textContent=pool.filter(c=>buySignals[c]).length}
+function renderHold(){renderRows(filtered(hold,'holdSearch'),'holdBody','hold');document.getElementById('holdCount').textContent=hold.length;document.getElementById('holdLive').textContent=hold.filter(c=>quotes[c]).length;document.getElementById('holdMA').textContent=hold.filter(c=>mas[c]).length;document.getElementById('holdSell').textContent=hold.filter(c=>sellSignals[c]).length}
+function renderBuy(){const list=filtered(pool,'poolSearch');renderRows(list,'buyBody','buy');const any=list.some(c=>buySignals[c]);document.getElementById('buyEmpty').textContent=any?'':'本次筛选没有发现符合条件的买入信号'}
+function renderSell(){const list=filtered(hold,'holdSearch');renderRows(list,'sellBody','sell');const any=list.some(c=>sellSignals[c]);const box=document.getElementById('sellEmpty');if(box)box.textContent=any?'':'没有符合条件的卖出结果'}
+function renderMarket(){renderRows(filtered(allCodes(),'marketSearch'),'marketBody','market')}
+function renderTags(){document.getElementById('tagList').innerHTML=tags.map((t,i)=>`<div style="padding:12px 0;border-bottom:1px solid #edf0f5"><span class="tag">${esc(t)}</span><button class="secondary" onclick="renameTag(${i})">重命名</button> <button class="danger" onclick="deleteTag(${i})">删除标签</button></div>`).join('')||'<div class="empty">暂无标签</div>'}
+function renderAll(){renderPool();renderHold();renderBuy();renderSell();renderMarket();renderTags()}
+function getTags(c){return pool.find(x=>x===c)?(JSON.parse(localStorage.getItem('A_SHARE_V5_TAG_'+c)||'[]')):[]}
+function setTags(c,a){localStorage.setItem('A_SHARE_V5_TAG_'+c,JSON.stringify(a));}
+function removePool(c){pool=pool.filter(x=>x!==c);localStorage.removeItem('A_SHARE_V5_TAG_'+c);save();renderAll()}
+function togglePoolSelectAll(checked){document.querySelectorAll('#poolBody .pool-check').forEach(x=>x.checked=checked)}
+function batchRemovePool(){const selected=[...document.querySelectorAll('#poolBody .pool-check:checked')].map(x=>x.value);if(!selected.length){alert('请先选择要删除的自选股票');return}if(!confirm(`确定批量删除已选择的 ${selected.length} 只自选股票吗？`))return;selected.forEach(c=>localStorage.removeItem('A_SHARE_V5_TAG_'+c));pool=pool.filter(c=>!selected.includes(c));save();renderAll()}
+async function backupPool(){
+  try{
+    const tagData={};
+    pool.forEach(c=>{tagData[c]=getTags(c)});
+    const backup={backupType:'A_SHARE_POOL_BACKUP',version:'V5.8',createdAt:new Date().toISOString(),pool:[...pool],tags:[...tags],stockTags:tagData};
+    const json=JSON.stringify(backup,null,2);
+    const stamp=new Date();
+    const pad=n=>String(n).padStart(2,'0');
+    const filename=`A股自选股票数据库备份_${stamp.getFullYear()}${pad(stamp.getMonth()+1)}${pad(stamp.getDate())}_${pad(stamp.getHours())}${pad(stamp.getMinutes())}${pad(stamp.getSeconds())}.json`;
+    const file=new File([json],filename,{type:'application/json'});
+
+    // iPhone/iPad Safari 对 Blob + <a download> 的处理并不稳定。
+    // 优先使用系统“共享/存储到文件”，确保用户真正得到一个可保存的 JSON 文件。
+    if(navigator.share && (!navigator.canShare || navigator.canShare({files:[file]}))){
+      try{
+        await navigator.share({title:'自选股票数据库备份',text:`自选股票数据库备份：${pool.length} 只股票`,files:[file]});
+        setStatus(`自选数据库备份已交给系统保存：${pool.length} 只股票`,true);
+        return;
+      }catch(e){
+        if(e && e.name==='AbortError'){
+          setStatus('已取消备份保存。',false);
+          return;
+        }
+      }
+    }
+
+    // 不支持系统文件分享时，退回标准浏览器文件下载。
+    const blob=new Blob([json],{type:'application/json;charset=utf-8'});
+    const url=URL.createObjectURL(blob);
+    const a=document.createElement('a');
+    a.href=url;
+    a.download=filename;
+    a.rel='noopener';
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(()=>URL.revokeObjectURL(url),2000);
+    setStatus(`自选数据库备份文件已生成：${pool.length} 只股票`,true);
+  }catch(e){
+    setStatus('自选数据库备份失败：'+(e&&e.message?e.message:'未知错误'),false);
+  }
+}
+
+async function importPoolBackup(input){
+  const file=input&&input.files&&input.files[0];
+  if(!file)return;
+  try{
+    const text=await file.text();
+    const data=JSON.parse(text);
+    if(!data || data.backupType!=='A_SHARE_POOL_BACKUP')throw new Error('不是本平台的自选股票数据库备份文件');
+    if(!Array.isArray(data.pool) || !Array.isArray(data.tags) || !data.stockTags || typeof data.stockTags!=='object')throw new Error('备份文件结构不完整');
+
+    const importedPool=[...new Set(data.pool.map(x=>String(x).trim()).filter(x=>/^\d{6}$/.test(x) && !/^(4|8|9)/.test(x)))];
+    const importedTags=[...new Set(data.tags.map(x=>String(x).trim()).filter(Boolean))];
+    const importedStockTags={};
+    importedPool.forEach(c=>{
+      const arr=Array.isArray(data.stockTags[c])?data.stockTags[c]:[];
+      importedStockTags[c]=[...new Set(arr.map(x=>String(x).trim()).filter(x=>importedTags.includes(x)))];
+    });
+
+    if(!confirm(`将导入并恢复 ${importedPool.length} 只自选股票及其标签。
+导入会替换当前“我的股票池”和标签，但不会修改“我的持仓”。
+确定继续吗？`))return;
+
+    // 只替换自选数据库；持仓、行情、MA、筛选状态等其他数据不动。
+    const oldPool=[...pool];
+    oldPool.forEach(c=>localStorage.removeItem('A_SHARE_V5_TAG_'+c));
+    pool=importedPool;
+    tags=importedTags;
+    pool.forEach(c=>setTags(c,importedStockTags[c]||[]));
+    save();
+    buySignals={};
+    renderAll();
+    setStatus(`自选数据库导入成功：${pool.length} 只股票`,true);
+    input.value='';
+
+    // 导入后重新取得这些股票的实时行情和MA；失败不会影响已经恢复的数据库。
+    try{await refreshAll();await loadAllMA();}catch(e){}
+  }catch(e){
+    input.value='';
+    setStatus('自选数据库导入失败：'+(e&&e.message?e.message:'文件读取失败'),false);
+    alert('导入失败：'+(e&&e.message?e.message:'文件读取失败'));
+  }
+}
+function removeHold(c){hold=hold.filter(x=>x!==c);save();renderAll()}
+function openAdd(type){document.getElementById('modalBack').classList.add('show');document.getElementById('modal').innerHTML=`<h3>添加${type==='pool'?'自选股票':'持仓股票'}</h3><div class="formrow"><label>股票代码或名称</label><input id="addKey" placeholder="例如 600519 / 贵州茅台"></div><div class="small muted">建议输入6位股票代码，连接成功后自动读取真实名称。</div><div class="modal-actions"><button class="secondary" onclick="closeModal()">取消</button><button class="primary" onclick="doAdd('${type}')">确认添加</button></div>`;setTimeout(()=>document.getElementById('addKey').focus(),50)}
+function closeModal(){document.getElementById('modalBack').classList.remove('show')}
+async function resolveKey(key){key=key.trim();if(/^\d{6}$/.test(key)){if(/^(4|8|9)/.test(key))throw new Error('北交所或非沪深A股代码，不纳入本平台');return key}const local=allCodes().find(c=>(quotes[c]?.name||'').includes(key));if(local)return local;const hint='v_hint';try{await loadScript('https://smartbox.gtimg.cn/s3/?v=2&t=all&c=1&q='+encodeURIComponent(key),7000);let raw=window[hint];if(typeof raw==='string'){const s=raw.replace(/^v_hint="/,'').replace(/";?$/,'');const first=s.split('^').map(x=>x.split('~')).find(a=>/^(sh|sz)~\d{6}~/.test(a.join('~')));if(first)return first[1]}}catch(e){}throw new Error('没有找到匹配股票，请输入6位代码或检查名称')}
+async function doAdd(type){const key=document.getElementById('addKey').value.trim();if(!key)return;try{const c=await resolveKey(key);const arr=type==='pool'?pool:hold;if(arr.includes(c)){alert('该股票已经存在，不能重复添加');return}if(!quotes[c]){setStatus('正在验证股票实时行情……');const got=await getQuote([c]);if(!got[c])throw new Error('没有取得该股票实时行情，请检查代码');quotes[c]=got[c]}arr.push(c);save();closeModal();renderAll();setStatus(`已添加：${quotes[c].name} ${c}`,true);await loadAllMA()}catch(e){alert(e.message)}}
+function editTags(c){document.getElementById('modalBack').classList.add('show');const cur=getTags(c);document.getElementById('modal').innerHTML=`<h3>${esc(quotes[c]?.name||c)} · 标签</h3><div class="formrow"><label>选择标签</label><div class="tagselect" id="tagSelectBox"><button type="button" class="tagselect-btn" onclick="toggleTagDropdown()">${cur.length?`已选 ${cur.length} 个标签`:'请选择标签'}　⌄</button><div class="tagdropdown">${tags.length?tags.map(t=>`<label><input type="checkbox" value="${esc(t)}" ${cur.includes(t)?'checked':''} onchange="updateTagSelectText()">${esc(t)}</label>`).join(''):'<div class="tag-empty">暂无标签，请先在标签管理中创建</div>'}</div></div></div><div class="small muted">标签可以有几十种，点击下拉菜单后多选；标签只用于整理，不参与买入/卖出筛选。</div><div class="modal-actions"><button class="secondary" onclick="closeModal()">取消</button><button class="primary" onclick="saveTagPick('${c}')">保存</button></div>`}
+function toggleTagDropdown(){document.getElementById('tagSelectBox')?.classList.toggle('open')}
+function updateTagSelectText(){const box=document.getElementById('tagSelectBox');if(!box)return;const n=box.querySelectorAll('input[type=checkbox]:checked').length;const b=box.querySelector('.tagselect-btn');if(b)b.textContent=n?`已选 ${n} 个标签`:'请选择标签　⌄'}
+function saveTagPick(c){const vals=[...document.querySelectorAll('#modal input[type=checkbox]:checked')].map(x=>x.value);setTags(c,vals);closeModal();renderPool()}
+function newTag(){const x=prompt('新标签名称');if(!x)return;if(tags.includes(x)){alert('标签已存在');return}tags.push(x.trim());save();renderTags()}
+function renameTag(i){const x=prompt('新名称',tags[i]);if(!x||x===tags[i])return;const old=tags[i];tags[i]=x.trim();pool.forEach(c=>setTags(c,getTags(c).map(t=>t===old?tags[i]:t)));save();renderAll()}
+function deleteTag(i){const old=tags[i];if(!confirm('只删除标签，不删除股票。继续？'))return;tags.splice(i,1);pool.forEach(c=>setTags(c,getTags(c).filter(t=>t!==old)));save();renderAll()}
+function maAtPrice(c,price){const q=quotes[c],m=mas[c];if(!q||!m)return null;const base={...m};[5,8,13,21,34,55].forEach(n=>{const cur=m[n];if(cur==null)return;const delta=(price-q.price)/n;base[n]=cur+delta});return base}
+function strictGrade(m){if(!m)return'';const a=[5,8,13].map(n=>m[n]);if(a.every(x=>x>m[21])&&a.every(x=>x>m[34])&&a.every(x=>x>m[55]))return'A级买入';if(a.every(x=>x>m[21])&&a.every(x=>x<m[34])&&a.every(x=>x<m[55]))return'B级买入';if(a.every(x=>x<m[21])&&a.every(x=>x<m[34])&&a.every(x=>x<m[55]))return'C级买入';return''}
+function timeKey(t){const m=String(t||'').match(/(\d{1,2}):(\d{2})/);return m?String(m[1]).padStart(2,'0')+':'+m[2]:String(t||'').slice(-5)}
+function cumulativeAtTime(rows,time){
+  if(!Array.isArray(rows))return null;
+  const target=timeKey(time); let sum=0,found=false;
+  for(const x of rows){
+    if(x.volume==null)continue;
+    const tk=timeKey(x.time);
+    if(tk<=target){sum+=Number(x.volume)||0;found=true}else if(found)break;
+  }
+  return found?sum:null;
+}
+function marketDate(){return new Date().toLocaleDateString('sv-SE',{timeZone:'Asia/Shanghai'})}
+function normalizeDate(d){const m=String(d||'').match(/(\d{4})[-/]?(\d{2})[-/]?(\d{2})/);return m?`${m[1]}-${m[2]}-${m[3]}`:''}
+function previousThreeTradingDays(code){
+  const days=fiveDayCache[code]||[]; const today=marketDate();
+  const usable=days.filter(d=>normalizeDate(d.date) && normalizeDate(d.date)!==today && Array.isArray(d.data));
+  return usable.slice(-3);
+}
+function sameTimeBaseline(code,time){
+  const vals=previousThreeTradingDays(code).map(d=>cumulativeAtTime(d.data||[],time)).filter(v=>v!=null&&Number.isFinite(v));
+  return vals.length?vals.reduce((a,b)=>a+b,0)/vals.length:null;
+}
+function currentCumulativeVolume(mins,time){return cumulativeAtTime(mins||[],time)}
+
+function buyQualified(c){
+  const q=quotes[c],m=mas[c],mins=minuteCache[c];
+  if(!q||!m||!mins||mins.length<2)return '';
+  if(!m.historyCount||m.historyCount<=1)return '';
+
+  // 用当天实际分钟价格逐点重建盘中六条均线，判断当天是否曾发生过一次 MA5 同时上穿 MA8、MA13。
+  const valid=mins.map(x=>({
+    time:x.time,
+    price:x.price,
+    volume:x.volume,
+    ma:maAtPrice(c,x.price)
+  })).filter(x=>
+    x.price!=null&&
+    x.ma&&
+    [5,8,13,21,34,55].every(n=>Number.isFinite(x.ma[n]))
+  );
+  if(valid.length<2)return '';
+
+  // 当天只要发生过一次有效上穿，就保留当天上穿资格；不要求之后连续5分钟保持。
+  let crossedToday=false;
+  for(let i=1;i<valid.length;i++){
+    const wasAbove=valid[i-1].ma[5]>valid[i-1].ma[8]&&valid[i-1].ma[5]>valid[i-1].ma[13];
+    const nowAbove=valid[i].ma[5]>valid[i].ma[8]&&valid[i].ma[5]>valid[i].ma[13];
+    if(!wasAbove&&nowAbove){crossedToday=true;break}
+  }
+  if(!crossedToday)return '';
+
+  // 上穿资格保留到当天；上涨和放量均以当前最新有效分钟点判断。
+  const last=valid[valid.length-1];
+  if(last.price<=q.prev)return '';
+
+  // 放量：当前时刻当日累计成交量 >= 前3个交易日同一时刻累计成交量平均值 × 1.5。
+  const base=sameTimeBaseline(c,last.time);
+  const current=currentCumulativeVolume(mins,last.time);
+  if(base==null||base<=0||current==null||current<base*1.5)return '';
+
+  // 严格A/B/C结构；混合结构不产生买入信号。
+  return strictGrade(last.ma);
+}
+
+async function runBuy(){const list=pool;buySignals={};setStatus('正在读取盘中分钟数据并执行买入筛选……');for(const c of list){try{await getMinute(c);await getFiveDay(c);const g=buyQualified(c);if(g)buySignals[c]=g}catch(e){}}renderAll();if(!Object.keys(buySignals).length)document.getElementById('buyEmpty').textContent='本次筛选没有发现符合条件的买入信号';setStatus('买入筛选完成。',true)}
+function upperShadowSignal(c){const mins=minuteCache[c]||[];if(!mins.length)return false;const last=mins[mins.length-1];const o=last.price;return false}
+async function runSell(){
+  sellSignals={};
+  setStatus('正在执行持仓卖出筛选……');
+  for(const c of hold){
+    const q=quotes[c],m=mas[c];
+    if(!q||!m)continue;
+    try{
+      const mins=await getMinute(c);
+      await getFiveDay(c);
+      const valid=(mins||[]).map(x=>({time:x.time,price:x.price,ma:maAtPrice(c,x.price)}))
+        .filter(x=>x.price!=null&&x.ma&&Number.isFinite(x.ma[5]));
+
+      // 条件1：真正“跌破MA5”，必须由上一有效分钟点 >= MA5 变为当前 < MA5。
+      let crossDown=false;
+      if(valid.length>=2){
+        const prev=valid[valid.length-2],cur=valid[valid.length-1];
+        crossDown=prev.price>=prev.ma[5]&&cur.price<cur.ma[5];
+      }
+
+      const last=valid.length?valid[valid.length-1]:null;
+      const base=last?sameTimeBaseline(c,last.time):null;
+      const currentVol=last?currentCumulativeVolume(mins,last.time):null;
+      const volumeGrowth=(base!=null&&base>0&&currentVol!=null)?(currentVol-base)/base*100:null;
+      const up=(q.prev>0&&q.price>=q.prev)?(q.price-q.prev)/q.prev*100:null;
+      const drop=(q.prev>0&&q.price<q.prev)?(q.prev-q.price)/q.prev*100:null;
+
+      // 条件2A：放量滞涨。价格不能下跌；成交量增长率 >= 价格涨幅×1.5。
+      const stagnation=up!=null&&volumeGrowth!=null&&volumeGrowth>=up*1.5;
+      // 条件2B：放量大跌。跌幅必须达到1%；成交量增长率 >= 跌幅。
+      const bigDrop=drop!=null&&drop>=1&&volumeGrowth!=null&&volumeGrowth>=drop;
+
+      // 条件3：当前5分钟K线长上影线：上影 >= 实体2倍；实体为0且上影>0也成立。
+      let longUpper=false;
+      try{
+        const five=await loadFiveMinute(c);
+        if(five&&five.length){
+          const k=five[five.length-1];
+          if([k.open,k.close,k.high].every(Number.isFinite)){
+            const body=Math.abs(k.close-k.open);
+            const upper=k.high-Math.max(k.open,k.close);
+            longUpper=body===0?upper>0:upper>=2*body;
+          }
+        }
+      }catch(e){}
+
+      if(crossDown||stagnation||bigDrop||longUpper)sellSignals[c]='卖出';
+    }catch(e){}
+  }
+  renderAll();
+  const any=Object.keys(sellSignals).length>0;
+  const box=document.getElementById('sellEmpty'); if(box)box.textContent=any?'':'没有符合条件的卖出结果';
+  setStatus('持仓卖出筛选完成。',true);
+}
+
+async function loadFiveMinute(c){const key='mkline5_'+tq(c);try{await loadScript('https://web.ifzq.gtimg.cn/appstock/app/kline/mkline/get?param='+encodeURIComponent(tq(c)+',m5,,,30')+'&_var='+key,8000)}catch(e){return null}let obj=window[key];if(typeof obj==='string'){try{obj=JSON.parse(obj)}catch(e){try{obj=JSON.parse(obj.replace(/^.*?=/,''))}catch(e2){return null}}}const d=obj?.data?.[tq(c)];const rows=d?.m5||d?.data||[];if(!Array.isArray(rows))return null;return rows.map(r=>({time:r[0],open:num(r[1]),close:num(r[2]),high:num(r[3]),low:num(r[4]),volume:num(r[5])})).filter(x=>x.close!=null)}
+for(const n of document.querySelectorAll('.nav'))n.addEventListener('click',()=>{document.querySelectorAll('.nav').forEach(x=>x.classList.remove('active'));n.classList.add('active');document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));document.getElementById(n.dataset.page).classList.add('active');renderAll()});
+async function boot(){renderAll();if(!allCodes().length){setStatus('系统已就绪：请先添加自选股票或持仓股票。',true);return}await refreshAll();setInterval(()=>refreshAll(),60000)}
+boot();
+</script>
+</body></html>
